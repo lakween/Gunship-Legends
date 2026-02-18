@@ -1,4 +1,5 @@
-import VerifyASHumanPage from "@/src/pages/verify-as-human"
+import VerifyASHumanPage from "@/src/features/verify-as-human"
+
 
 const VerifyASHuman = () => {
 

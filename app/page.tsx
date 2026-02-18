@@ -1,11 +1,6 @@
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import LoginPage from "@/src/pages/login";
+import LoginPage from "@/src/features/login";
 
-const Login = () => {
 
-  return LoginPage()
+export default function Page() {
+  return <LoginPage />;
 }
-
-export default Login
