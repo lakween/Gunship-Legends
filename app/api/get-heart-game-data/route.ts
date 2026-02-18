@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
 	try {
-		const res = await fetch('https://marcconrad.com/uob/heart/', {
+		const res = await fetch('https://marcconrad.com/uob/heart/api.php', {
 			method: 'GET',
 			headers: { Accept: 'application/json, text/plain, */*' },
 			cache: 'no-store',
