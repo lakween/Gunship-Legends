@@ -28,8 +28,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <title>Higher or Lower - Game Dashboard</title>
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+      </head>
       <body className={`${geistSans.className} antialiased`}>
-
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -37,7 +42,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <NextTopLoader
-            color="blue" 
+            color="blue"
             initialPosition={0.08}
             crawlSpeed={200}
             height={4}
