@@ -4,21 +4,6 @@ import { useRouter } from "next/navigation";
 import { LoginForm } from "./components/LoginForm";
 
 const LoginPage = () => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-    const router = useRouter();
-
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-
-        // Simulate API Auth call
-        setTimeout(() => {
-            // In a real app, you'd verify credentials and set a cookie/token here
-            router.push("/"); // Redirect to your Flappy Bird / Card Game
-        }, 1500);
-    };
 
     return (
         <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4 font-sans">

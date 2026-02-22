@@ -12,22 +12,21 @@ const VerifyASHumanPage: React.FC = () => {
     const router = useRouter();
     const { data, error, loading, refresh } = useCallApi('/api/get-heart-game-data');
     const [answer, setAnswer] = useState<string>("");
-    const [shoutVisible, setShoutVisible] = useState(false);
 
     const question = data?.question || ''
 
-    const doShout = (text: string) => {
-        try {
-            const utter = new SpeechSynthesisUtterance(text);
-            utter.lang = 'en-US';
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utter);
-        } catch (e) {
-            // ignore if not supported
-        }
-        setShoutVisible(true);
-        setTimeout(() => setShoutVisible(false), 1500);
-    };
+    // const doShout = (text: string) => {
+    //     try {
+    //         const utter = new SpeechSynthesisUtterance(text);
+    //         utter.lang = 'en-US';
+    //         window.speechSynthesis.cancel();
+    //         window.speechSynthesis.speak(utter);
+    //     } catch (e) {
+    //         // ignore if not supported
+    //     }
+    //     setShoutVisible(true);
+    //     setTimeout(() => setShoutVisible(false), 1500);
+    // };
 
     const handleSubmit = () => {
         const solution = (data && typeof data === 'object' && (data as any).solution !== undefined) ? Number((data as any).solution) : null;
@@ -35,7 +34,7 @@ const VerifyASHumanPage: React.FC = () => {
 
         if (solution !== null && !Number.isNaN(_answer) && _answer === solution) {
             toast.success('Verified Sucsussfully')
-            router.push('/protected/dashboard')
+            router.push('/app')
         } else {
             toast.warning('Wrong Answer. Please try again')
             refresh()

@@ -44,7 +44,7 @@ export function LoginForm({
                 throw new Error(result.error || "Login failed");
             }
 
-            router.push("/protected/verify-as-human");
+            router.push("/app/verify-as-human");
             router.refresh();
         } catch (err: any) {
             toast.error(err.message);
