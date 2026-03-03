@@ -47,13 +47,26 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
 
-  if (
-    request.nextUrl.pathname !== "/" &&
-    !user &&
-    !request.nextUrl.pathname.startsWith("/api/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  const pathname = request.nextUrl.pathname;
+  const isApiRoute = pathname.startsWith("/api");
+  const isVerificationPage = pathname === "/app/verify-as-human";
+  const isHuman = request.cookies.get("is_human_verified")?.value === "true";
+
+  const isPublicRoute =
+    request.nextUrl.pathname === "/" ||
+    request.nextUrl.pathname.startsWith("/auth") ||
+    request.nextUrl.pathname.startsWith("/api/sign-up") ||
+    request.nextUrl.pathname.startsWith("/api/login") ||
+    request.nextUrl.pathname.startsWith("/auth");
+
+  if (user && !isHuman && !isPublicRoute && !isVerificationPage && !isApiRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/app/verify-as-human";
+    return NextResponse.redirect(url);
+  }
+
+  // 4. Logic: If NOT logged in and trying to access protected routes
+  if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);

@@ -28,18 +28,37 @@ const VerifyASHumanPage: React.FC = () => {
     //     setTimeout(() => setShoutVisible(false), 1500);
     // };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const solution = (data && typeof data === 'object' && (data as any).solution !== undefined) ? Number((data as any).solution) : null;
         const _answer = +answer;
 
         if (solution !== null && !Number.isNaN(_answer) && _answer === solution) {
             toast.success('Verified Sucsussfully')
-            router.push('/app')
+            try {
+                const response = await fetch("/api/verify-human", {
+                    method: "POST",
+                });
+
+                if (!response.ok) throw new Error("Verification failed");
+
+                // Refresh and redirect
+                router.refresh(); // Tells Next.js to re-run the Middleware
+                router.push("/app");
+
+            } catch (err: any) {
+                toast.error(err.message);
+            } finally {
+                // setIsLoading(false);
+            }
+
+            // router.push('/app')
         } else {
             toast.warning('Wrong Answer. Please try again')
             refresh()
         }
     };
+
+    console.log(data,'data')
 
     return (
         <div className="p-4">

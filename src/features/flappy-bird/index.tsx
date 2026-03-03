@@ -117,10 +117,10 @@ export default function FlappyBird() {
     }, [gameStarted, gameOver]);
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-stone-900 font-mono">
-            <div className="mb-4 text-white text-6xl font-black drop-shadow-[0_5px_0_rgba(0,0,0,0.5)]">
+        <div className="flex flex-col items-center justify-center bg-stone-900 font-mono">
+            {/* <div className="mb-4 text-white text-6xl font-black drop-shadow-[0_5px_0_rgba(0,0,0,0.5)]">
                 {score}
-            </div>
+            </div> */}
 
             <div className="relative border-[12px] border-white rounded-3xl overflow-hidden shadow-2xl">
                 <canvas
@@ -153,9 +153,9 @@ export default function FlappyBird() {
                 )}
             </div>
 
-            <div className="mt-8 text-stone-500 text-sm uppercase tracking-widest">
+            {/* <div className="mt-8 text-stone-500 text-sm uppercase tracking-widest">
                 Controls: [Space] or [Click]
-            </div>
+            </div> */}
         </div>
     );
 }

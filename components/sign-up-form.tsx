@@ -1,7 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,51 +8,68 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import FormInput from "@/src/common/FormInput";
+import useForm from "@/src/hooks/useForm";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export function SignUpForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [repeatPassword, setRepeatPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  const [passwordError, setPasswordError] = useState(false)
+
+  const { form, setForm, onChange } = useForm()
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
-    if (password !== repeatPassword) {
-      setError("Passwords do not match");
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/protected`,
-        },
+      const response = await fetch("/api/sign-up", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
       });
-      if (error) throw error;
+
+      const result = await response.json();
+
+      console.log('working', result)
+
+      if (!response.ok) {
+        throw new Error(result.error || "Login failed");
+      }
+
       router.push("/auth/sign-up-success");
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+      // router.refresh();
+    } catch (err: any) {
+      console.log(err.message, 'err.message')
+      toast.error(err.message);
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (form?.password && form?.repeat_password) {
+      if (form?.password !== form?.repeat_password) {
+        setPasswordError(true);
+        return;
+      }
+      else {
+        setPasswordError(false);
+      }
+    }
+
+  }, [JSON.stringify(form)])
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -66,49 +81,50 @@ export function SignUpForm({
         <CardContent>
           <form onSubmit={handleSignUp}>
             <div className="flex flex-col gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="repeat-password">Repeat Password</Label>
-                </div>
-                <Input
-                  id="repeat-password"
-                  type="password"
-                  required
-                  value={repeatPassword}
-                  onChange={(e) => setRepeatPassword(e.target.value)}
-                />
-              </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
+              <FormInput
+                label={"First Name"}
+                name={"first_name"}
+                placeholder={"lakween"}
+                form={form}
+                onChange={onChange}
+              />
+              <FormInput
+                label={"Last Name"}
+                name={"last_name"}
+                placeholder={"senathilake"}
+                form={form}
+                onChange={onChange}
+              />
+              <FormInput
+                label={"Email"}
+                name={"email"}
+                placeholder={"Emai"}
+                form={form}
+                onChange={onChange}
+              />
+              <FormInput
+                label={"Password"}
+                name={"password"}
+                placeholder={""}
+                form={form}
+                onChange={onChange}
+              />
+              <FormInput
+                label={"Repeat Password"}
+                name={"repeat_password"}
+                placeholder={""}
+                type="password"
+                form={form}
+                onChange={onChange}
+              />
+              {passwordError && <p className="text-sm text-red-500">Passwords not maching</p>}
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Creating an account..." : "Sign up"}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
-              <Link href="/auth/login" className="underline underline-offset-4">
+              <Link href="/" className="underline underline-offset-4">
                 Login
               </Link>
             </div>
