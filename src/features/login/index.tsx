@@ -28,7 +28,7 @@ const LoginPage = () => {
                     </div>
 
                     <h1 className="text-white text-3xl font-black tracking-tighter uppercase italic">
-                        Guess the <span className="text-rose-500">Card</span>
+                        Flappy <span className="text-rose-500">Bird</span>
                     </h1>
                 </div>
 
@@ -36,9 +36,9 @@ const LoginPage = () => {
                 <LoginForm />
 
                 {/* Footer Link */}
-                <p className="text-center mt-8 text-neutral-600 text-xs font-medium">
+                {/* <p className="text-center mt-8 text-neutral-600 text-xs font-medium">
                     New Player? <span className="text-red-500 cursor-pointer hover:underline">Register your Deck</span>
-                </p>
+                </p> */}
             </div>
         </div>
     );
