@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Pencil, Loader2, Check, X } from "lucide-react";
+import { Pencil, Loader2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface EditableFormInputProps {
-    label: string;
+    label?: string;
     name: string;
     type?: string;
     placeholder?: string;
@@ -27,116 +28,186 @@ const EditableFormInput = ({
     onSave,
     className,
 }: EditableFormInputProps) => {
-    const [isEditing, setIsEditing] = useState(false);
-    const [value, setValue] = useState(initialValue);
+    const [open, setOpen] = useState(false);
+    const [draft, setDraft] = useState(initialValue);
     const [savedValue, setSavedValue] = useState(initialValue);
     const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+    const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0, width: 0 });
+
+    const anchorRef = useRef<HTMLButtonElement>(null);
+    const popoverRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const enterEdit = () => {
-        setIsEditing(true);
+    useEffect(() => {
+        setSavedValue(initialValue);
+    }, [initialValue]);
+
+    // Calculate position from anchor button
+    const openPopover = () => {
+        if (anchorRef.current) {
+            const rect = anchorRef.current.getBoundingClientRect();
+            setPopoverPos({
+                top: rect.bottom + window.scrollY + 6,
+                left: rect.left + window.scrollX,
+                width: Math.max(rect.width, 260),
+            });
+        }
+        setDraft(savedValue);
         setStatus("idle");
-        setTimeout(() => inputRef.current?.focus(), 0);
+        setOpen(true);
     };
 
-    const cancel = () => {
-        setValue(savedValue); // revert
-        setIsEditing(false);
-        setStatus("idle");
-    };
+    // Focus input after popover mounts
+    useEffect(() => {
+        if (open) {
+            setTimeout(() => inputRef.current?.focus(), 0);
+        }
+    }, [open]);
+
+    // Close on outside click
+    useEffect(() => {
+        if (!open) return;
+        const handler = (e: MouseEvent) => {
+            if (
+                popoverRef.current &&
+                !popoverRef.current.contains(e.target as Node) &&
+                !anchorRef.current?.contains(e.target as Node)
+            ) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, [open]);
+
+    // Recalculate on scroll/resize
+    useEffect(() => {
+        if (!open) return;
+        const update = () => {
+            if (anchorRef.current) {
+                const rect = anchorRef.current.getBoundingClientRect();
+                setPopoverPos({
+                    top: rect.bottom + window.scrollY + 6,
+                    left: rect.left + window.scrollX,
+                    width: Math.max(rect.width, 260),
+                });
+            }
+        };
+        window.addEventListener("scroll", update, true);
+        window.addEventListener("resize", update);
+        return () => {
+            window.removeEventListener("scroll", update, true);
+            window.removeEventListener("resize", update);
+        };
+    }, [open]);
 
     const save = useCallback(async () => {
-        if (value === savedValue) {
-            setIsEditing(false);
+        if (draft === savedValue) {
+            setOpen(false);
             return;
         }
         setStatus("saving");
         try {
-            await onSave(name, value);
-            setSavedValue(value);
+            await onSave(name, draft);
+            setSavedValue(draft);
             setStatus("saved");
-            setIsEditing(false);
-            setTimeout(() => setStatus("idle"), 2000);
+            setTimeout(() => {
+                setStatus("idle");
+                setOpen(false);
+            }, 800);
         } catch {
             setStatus("error");
         }
-    }, [name, value, savedValue, onSave]);
+    }, [draft, savedValue, name, onSave]);
+
+    console.log(draft, 'sdsdsdsd')
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter") save();
-        if (e.key === "Escape") cancel();
+        if (e.key === "Escape") setOpen(false);
     };
 
     return (
         <div className={cn("grid gap-1.5", className)}>
-            <Label htmlFor={name} className="text-sm font-medium text-muted-foreground">
+            {label && (<Label className="text-sm font-medium text-muted-foreground">
                 {label}
                 {required && <span className="text-destructive ml-1">*</span>}
-            </Label>
+            </Label>)}
 
-            {isEditing ? (
-                /* ── Edit mode ── */
-                <div className="flex items-center gap-2">
+            {/* ── Display row ── */}
+            <button
+                ref={anchorRef}
+                type="button"
+                onClick={openPopover}
+                className="group flex items-center justify-between w-full text-left px-3 py-1.5 rounded-md text-sm hover:bg-muted/60 transition-colors"
+            >
+                <span className={cn("flex-1 truncate", !savedValue && "text-muted-foreground/40")}>
+                    {savedValue || placeholder}
+                </span>
+                {status === "saved" ? (
+                    <Check className="w-3.5 h-3.5 text-green-500 shrink-0" />
+                ) : (
+                    <Pencil className="w-3.5 h-3.5 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                )}
+            </button>
+
+            {/* ── Portal popover — renders on document.body, escapes overflow:hidden ── */}
+            {open && typeof window !== "undefined" && createPortal(
+                <div
+                    ref={popoverRef}
+                    style={{
+                        position: "absolute",
+                        top: popoverPos.top,
+                        left: popoverPos.left,
+                        width: popoverPos.width,
+                        zIndex: 9999,
+                    }}
+                    className="rounded-lg border bg-popover shadow-lg p-3 flex flex-col gap-3"
+                >
+                    <p className="text-xs font-medium text-muted-foreground">
+                        Edit {label}
+                    </p>
+
                     <Input
                         ref={inputRef}
                         id={name}
-                        name={name}
                         type={type}
-                        value={value}
+                        value={draft}
                         placeholder={placeholder}
-                        required={required}
                         disabled={status === "saving"}
-                        onChange={(e) => setValue(e.target.value)}
+                        onChange={(e) => setDraft(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        onBlur={save}
                         className="h-8 text-sm"
                     />
-                    {/* Confirm / cancel buttons — optional, onBlur handles it too */}
-                    <button
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()} // prevent blur before click
-                        onClick={save}
-                        disabled={status === "saving"}
-                        className="text-muted-foreground hover:text-green-500 transition-colors disabled:opacity-40"
-                    >
-                        {status === "saving"
-                            ? <Loader2 className="w-4 h-4 animate-spin" />
-                            : <Check className="w-4 h-4" />
-                        }
-                    </button>
-                    <button
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={cancel}
-                        className="text-muted-foreground hover:text-destructive transition-colors"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
-                </div>
-            ) : (
-                /* ── Display mode ── */
-                <button
-                    type="button"
-                    onClick={enterEdit}
-                    className={cn(
-                        "group flex items-center gap-2 w-full text-left",
-                        "px-3 py-1.5 rounded-md text-sm",
-                        "hover:bg-muted/60 transition-colors duration-150",
-                        status === "error" && "text-destructive"
-                    )}
-                >
-                    <span className={cn("flex-1 truncate", !savedValue && "text-muted-foreground/50")}>
-                        {savedValue || placeholder}
-                    </span>
 
-                    {status === "saved" ? (
-                        <Check className="w-3.5 h-3.5 text-green-500 shrink-0" />
-                    ) : status === "error" ? (
-                        <span className="text-[11px] text-destructive shrink-0">Failed</span>
-                    ) : (
-                        <Pencil className="w-3.5 h-3.5 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    {status === "error" && (
+                        <p className="text-xs text-destructive">
+                            Failed to save. Try again.
+                        </p>
                     )}
-                </button>
+
+                    <div className="flex items-center justify-end gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setOpen(false)}
+                            className="text-xs px-3 py-1.5 rounded-md border hover:bg-muted transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            onClick={save}
+                            disabled={status === "saving"}
+                            className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                        >
+                            {status === "saving" && (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                            )}
+                            Save
+                        </button>
+                    </div>
+                </div>,
+                document.body
             )}
         </div>
     );

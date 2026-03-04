@@ -4,6 +4,7 @@ import { useCallApi } from "@/src/hooks/useCallApi";
 import useForm from "@/src/hooks/useForm";
 import { LayoutDashboard, User, Settings, LogOut, Trophy } from "lucide-react";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 export default function ProfileDetails() {
   const { data, error, loading, refresh } = useCallApi('/api/user');
@@ -14,10 +15,23 @@ export default function ProfileDetails() {
   }, [data])
 
   const onSaveHandler = async (key: string, value: string) => {
-    console.log(key, value)
-  }
+    try {
+      const res = await fetch("/api/user", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key, value }),
+      });
 
+      const { data, error } = await res.json();
 
+      if (!res.ok) throw new Error(error ?? "Something went wrong");
+
+      toast.success("Profile updated successfully");
+      return data;
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update profile");
+    }
+  };
 
   return (
     <>
@@ -48,23 +62,31 @@ export default function ProfileDetails() {
               </div>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">AlexGamer</h2>
-              <p className="text-secondary text-sm">{data?.email}</p>
+              <h2 className="text-xl font-bold text-white">{ }</h2>
+              <p className="text-secondary text-sm">{data?.display_name}</p>
             </div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <div className="flex justify-between items-end">
-              <span className="text-white text-xs">First Name</span>
+            <div className="flex justify-between items-center font-medium">
+              <span className="text-white text-sm">Display Name</span>
               <div>
-                <EditableFormInput  name={"first_name"} value={form?.first_name || ''} onSave={onSaveHandler} />
+                <EditableFormInput name={"display_name"} value={form?.display_name || ''} onSave={onSaveHandler} />
               </div>
-              {/* <span className="text-white font-medium">{data?.currect_score}</span> */}
             </div>
-            <div className="flex justify-between items-end">
-              <span className="text-white font-medium">Latest Score</span>
-              <span className="text-white font-medium">750</span>
+            <div className="flex justify-between items-center font-medium">
+              <span className="text-white text-sm">First Name</span>
+              <div>
+                <EditableFormInput name={"first_name"} value={form?.first_name || ''} onSave={onSaveHandler} />
+              </div>
             </div>
+            <div className="flex justify-between items-center font-medium">
+              <span className="text-white text-sm">Last Name</span>
+              <div>
+                <EditableFormInput name={"last_name"} value={form?.last_name || ''} onSave={onSaveHandler} />
+              </div>
+            </div>
+
           </div>
 
           <nav className="flex flex-col gap-1 py-2">

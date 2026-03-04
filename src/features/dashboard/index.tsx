@@ -1,7 +1,5 @@
 "use client";
 import { useState } from "react";
-import Sidebar from "./components/Sidebar";
-import StatsHeader from "./components/StatsHeader";
 import GameBoard from "./components/ProfileDetails";
 import Leaderboard from "./components/Leaderboard";
 import { Menu } from "lucide-react";

@@ -106,8 +106,11 @@ export default function FlappyBird() {
     useEffect(() => {
         const handleAction = (e?: KeyboardEvent) => {
             if (e && e.code !== "Space") return;
-            if (gameOver) return window.location.reload();
 
+            const tag = document.activeElement?.tagName;
+            if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+            if (gameOver) return window.location.reload();
             state.current.birdV = SETTINGS.JUMP;
             if (!gameStarted) setGameStarted(true);
         };
