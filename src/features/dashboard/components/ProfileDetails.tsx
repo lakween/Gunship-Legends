@@ -1,16 +1,27 @@
 "use client";
+import EditableFormInput from "@/src/common/EditableFormInput";
+import { useCallApi } from "@/src/hooks/useCallApi";
+import useForm from "@/src/hooks/useForm";
 import { LayoutDashboard, User, Settings, LogOut, Trophy } from "lucide-react";
+import { useEffect } from "react";
 
 export default function ProfileDetails() {
-  const menuItems = [
-    { icon: <LayoutDashboard size={20} />, label: "Dashboard", active: true },
-    { icon: <User size={20} />, label: "Profile", active: false },
-    { icon: <Settings size={20} />, label: "Settings", active: false },
-  ];
+  const { data, error, loading, refresh } = useCallApi('/api/user');
+  const { form, setForm, onChange } = useForm()
+
+  useEffect(() => {
+    setForm(data)
+  }, [data])
+
+  const onSaveHandler = async (key: string, value: string) => {
+    console.log(key, value)
+  }
+
+
 
   return (
     <>
-      <aside className="hidden lg:flex flex-col w-72 h-full border-r border-border-dark bg-background-dark z-20">
+      <aside className="hidden lg:flex flex-col w-72  border-r border-border-dark bg-background-dark z-20">
 
         <div className="h-20 flex items-center px-6 border-b border-border-dark">
           <div className="flex items-center gap-2 text-primary">
@@ -20,7 +31,7 @@ export default function ProfileDetails() {
           </div>
         </div>
 
-        <div className="p-6 flex flex-col gap-6 overflow-y-auto">
+        <div className="p-6 flex flex-col gap-6 overflow-y-auto max-h-[calc(100vh-200px)] ">
 
           <div className="flex flex-col items-center text-center gap-3">
             <div className="relative group">
@@ -38,44 +49,33 @@ export default function ProfileDetails() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">AlexGamer</h2>
-              <p className="text-secondary text-sm">alex@example.com</p>
+              <p className="text-secondary text-sm">{data?.email}</p>
             </div>
           </div>
 
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-end">
-              <span className="text-white font-medium">Level 12</span>
-              <span className="text-secondary text-xs">750/1000 XP</span>
+              <span className="text-white text-xs">First Name</span>
+              <div>
+                <EditableFormInput  name={"first_name"} value={form?.first_name || ''} onSave={onSaveHandler} />
+              </div>
+              {/* <span className="text-white font-medium">{data?.currect_score}</span> */}
             </div>
-            <div className="h-2 w-full bg-border-dark rounded-full overflow-hidden">
-              <div className="h-full bg-primary w-3/4 rounded-full shadow-[0_0_10px_rgba(51,13,242,0.6)]"></div>
+            <div className="flex justify-between items-end">
+              <span className="text-white font-medium">Latest Score</span>
+              <span className="text-white font-medium">750</span>
             </div>
           </div>
 
           <nav className="flex flex-col gap-1 py-2">
-            <a className="flex items-center gap-3 px-4 py-3 rounded-xl bg-surface-dark text-white border border-border-dark/50 hover:border-primary/50 transition-colors group"
-              href="#">
-              <span
-                className="material-symbols-outlined text-primary group-hover:text-white transition-colors">dashboard</span>
-              <span className="font-medium">Dashboard</span>
-            </a>
-            <a className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-dark/50 text-secondary hover:text-white transition-colors"
-              href="#">
-              <span className="material-symbols-outlined">person</span>
-              <span className="font-medium">Profile</span>
-            </a>
-            <a className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-dark/50 text-secondary hover:text-white transition-colors"
-              href="#">
-              <span className="material-symbols-outlined">settings</span>
-              <span className="font-medium">Settings</span>
-            </a>
+
           </nav>
 
           <div className="grid grid-cols-2 gap-3 mt-auto">
             <div
               className="col-span-2 bg-surface-dark p-4 rounded-xl border border-border-dark flex items-center justify-between">
               <div>
-                <p className="text-secondary text-xs uppercase tracking-wider font-semibold">Total Wins</p>
+                <p className="text-secondary text-xs uppercase tracking-wider font-semibold">Best Score</p>
                 <p className="text-2xl font-bold text-white mt-1">142</p>
               </div>
               <span className="material-symbols-outlined text-green-500 text-3xl">emoji_events</span>
@@ -85,16 +85,11 @@ export default function ProfileDetails() {
               <p className="text-xl font-bold text-white mt-1">200</p>
             </div>
             <div className="bg-surface-dark p-3 rounded-xl border border-border-dark">
-              <p className="text-secondary text-xs uppercase tracking-wider font-semibold">Fails</p>
+              <p className="text-secondary text-xs uppercase tracking-wider font-semibold">Latest</p>
               <p className="text-xl font-bold text-white mt-1">58</p>
             </div>
           </div>
 
-          <button
-            className="flex items-center gap-3 px-4 py-2 mt-2 text-secondary hover:text-red-400 transition-colors w-full">
-            <span className="material-symbols-outlined">logout</span>
-            <span className="font-medium">Logout</span>
-          </button>
         </div>
       </aside>
     </>

@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   try {
     const { email, password, first_name, last_name } = await request.json();
     const supabase = await createClient();
-    const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm`
+    const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm?next=/app/confirmation-success`
 
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
