@@ -1,115 +1,238 @@
-export default function Leaderboard() {
+"use client";
 
+import { useEffect, useState, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client"; // your browser client
+
+type LeaderEntry = {
+  rank: number;
+  id: string;
+  display_name: string;
+  avatar_url: string | null;
+  best_score: number;
+  league: string;
+};
+
+type Me = {
+  rank: number | null;
+  best_score: number;
+  league: string;
+  display_name: string;
+};
+
+function rankStyle(rank: number) {
+  if (rank === 1) return {
+    border: "border-yellow-500",
+    badge: "bg-yellow-500 text-black",
+    score: "text-yellow-500",
+    row: "bg-gradient-to-r from-yellow-500/10 to-transparent border border-yellow-500/20",
+  };
+  if (rank === 2) return {
+    border: "border-slate-400",
+    badge: "bg-slate-400 text-black",
+    score: "text-slate-300",
+    row: "bg-surface-dark/50 border border-border-dark",
+  };
+  if (rank === 3) return {
+    border: "border-orange-600",
+    badge: "bg-orange-700 text-white",
+    score: "text-orange-400",
+    row: "bg-surface-dark/50 border border-border-dark",
+  };
+  return {
+    border: "",
+    badge: "",
+    score: "text-secondary",
+    row: "border border-transparent hover:border-border-dark",
+  };
+}
+
+function formatScore(n: number) {
+  return n.toLocaleString();
+}
+
+function Avatar({ src, name, borderClass }: { src: string | null; name: string; borderClass: string }) {
+  if (src) {
+    return (
+      <img
+        src={src}
+        alt={`${name} avatar`}
+        className={`w-10 h-10 rounded-full object-cover border-2 ${borderClass}`}
+      />
+    );
+  }
+  const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  return (
+    <div className={`w-10 h-10 rounded-full border-2 ${borderClass} bg-surface-dark flex items-center justify-center text-sm font-bold text-white`}>
+      {initials}
+    </div>
+  );
+}
+
+export default function Leaderboard() {
+  const [leaders, setLeaders] = useState<LeaderEntry[]>([]);
+  const [me, setMe] = useState<Me | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [live, setLive] = useState(false);
+  const [flash, setFlash] = useState(false);
+
+  const supabase = createClient();
+
+  const fetchLeaderboard = useCallback(async () => {
+    try {
+      const res = await fetch("/api/leaderboard");
+      if (!res.ok) return;
+      const data = await res.json();
+      setLeaders(data.leaders);
+      setMe(data.me);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLeaderboard();
+
+    const channel = supabase
+      .channel("leaderboard-live")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "profiles",
+        },
+        async () => {
+          await fetchLeaderboard();
+          setFlash(true);
+          setTimeout(() => setFlash(false), 800);
+        }
+      )
+      .subscribe((status) => {
+        setLive(status === "SUBSCRIBED");
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchLeaderboard]);
 
   return (
     <aside className="hidden xl:flex flex-col w-80 h-full border-l border-border-dark bg-background-dark z-20">
+
+      {/* Header */}
       <div className="h-20 flex items-center justify-between px-6 border-b border-border-dark">
         <h3 className="text-lg font-bold text-white flex items-center gap-2">
           <span className="material-symbols-outlined text-yellow-500">trophy</span>
           Global Leaders
         </h3>
-        <button className="text-secondary hover:text-white transition-colors">
-          <span className="material-symbols-outlined">filter_list</span>
-        </button>
-      </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-2 max-h-[calc(100vh-200px)]">
-        <div
-          className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-yellow-500/10 to-transparent border border-yellow-500/20 relative group hover:bg-surface-dark transition-colors cursor-pointer">
-          <div className="absolute -left-[1px] top-3 bottom-3 w-1 bg-yellow-500 rounded-r"></div>
-          <div className="relative">
-            <img alt="Leader avatar 1" className="w-10 h-10 rounded-full object-cover border-2 border-yellow-500"
-              data-alt="ProPlayer avatar"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuA14uD7FK3pNLmA36tSVPhHPtqQlI9Tysqy7XQVmDJAhWS-VwH80_NggpLyHxsoZXqTaNFGZe_5w9iwoq7If1KxhfXStqR5CwDgZ4Zatj-xt1ajvr49OIQeiSRFpOoqJ16O2r5Q1T3Q0L_IArZVbBdGVHgngfUSXRI9lt7RRxWmXxPKO3dnenmAVgnpNwdqNCxEZW16dSnQ9MSz3pkPRFZCQM39TQggDHDAT_B9XZ3hc9Uj_2RvjwhM3pv_C4zzwSAZxaWYuUP81sY" />
-            <span
-              className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center text-[10px] font-bold text-black shadow-sm">1</span>
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-bold text-white">ProPlayer</p>
-            <p className="text-xs text-secondary">Master League</p>
-          </div>
-          <p className="font-mono font-bold text-yellow-500">9,999</p>
-        </div>
 
-        <div
-          className="flex items-center gap-3 p-3 rounded-xl bg-surface-dark/50 border border-border-dark hover:bg-surface-dark transition-colors cursor-pointer">
-          <div className="relative">
-            <img alt="Leader avatar 2" className="w-10 h-10 rounded-full object-cover border-2 border-slate-400"
-              data-alt="CardShark avatar"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXC0GIuvt7WcoYfQbbgFY9pSA7kjgJmMO6Kc2R04cjmYi2I-Vtd5qO2V_ALSkezvAw4YhfdUGOt9rKWAlXqPIjs0Knrl7B8a7Obmb7pZvytUMonQh5jIRO74FcMfZ28_Kyu7slV00EiA_e06P-JbJZ86Bn_mUus5kxafmlPAnGqVIq2bLQ9JoKsUI8RM7sRV-3ye2XLhNewZ5fao0Zuhp4U6e6WPxUcG8kSOXBXXVHulndzx51AKfOLTgKdF4xXnmwkcnYHSbRVbA" />
-            <span
-              className="absolute -top-1 -right-1 w-5 h-5 bg-slate-400 rounded-full flex items-center justify-center text-[10px] font-bold text-black shadow-sm">2</span>
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-bold text-white">CardShark</p>
-            <p className="text-xs text-secondary">Diamond League</p>
-          </div>
-          <p className="font-mono font-bold text-slate-300">8,500</p>
-        </div>
-
-        <div
-          className="flex items-center gap-3 p-3 rounded-xl bg-surface-dark/50 border border-border-dark hover:bg-surface-dark transition-colors cursor-pointer">
-          <div className="relative">
-            <img alt="Leader avatar 3" className="w-10 h-10 rounded-full object-cover border-2 border-orange-700"
-              data-alt="LuckyDuck avatar"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4kr4OrTzfI1zh2JwlX9LKinU3YG0YxjtFtYKN7NIrorkrs-uDaa9A-9irk99IddPbKBl89FEKXiSoFhdB9x-HXf7Hhj7oovFax6iCwbxoeqMb7lAB69MrOx8q7KWSO-e_vocA87IfgCzLghNHIAJ8W0MF1Rj0TvZI3sUhi7q64Ni9sb8ynNUsaILoHJwALfXOT2kWF9E4FLWsFtopIcNGaI8zzEzvz33g4edo7j88pnTHBrXtaCrflwaTKwqeoP6QRLITsNQFKhQ" />
-            <span
-              className="absolute -top-1 -right-1 w-5 h-5 bg-orange-700 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm">3</span>
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-bold text-white">LuckyDuck</p>
-            <p className="text-xs text-secondary">Platinum League</p>
-          </div>
-          <p className="font-mono font-bold text-orange-400">7,240</p>
-        </div>
-
-        <div
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-dark transition-colors cursor-pointer border border-transparent hover:border-border-dark">
-          <span className="w-10 text-center font-bold text-secondary text-sm">4</span>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-white">GameMasterX</p>
-          </div>
-          <p className="font-mono text-sm text-secondary">6,100</p>
-        </div>
-
-        <div
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-dark transition-colors cursor-pointer border border-transparent hover:border-border-dark">
-          <span className="w-10 text-center font-bold text-secondary text-sm">5</span>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-white">AceHigh</p>
-          </div>
-          <p className="font-mono text-sm text-secondary">5,920</p>
-        </div>
-
-        <div
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-dark transition-colors cursor-pointer border border-transparent hover:border-border-dark">
-          <span className="w-10 text-center font-bold text-secondary text-sm">6</span>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-white">NeonRider</p>
-          </div>
-          <p className="font-mono text-sm text-secondary">5,800</p>
+        {/* Live indicator */}
+        <div className="relative flex items-center gap-1.5 text-xs text-secondary">
+          <span className="relative flex h-2 w-2">
+            {live && (
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75" />
+            )}
+            <span className={`relative inline-flex rounded-full h-2 w-2 ${live ? "bg-green-500" : "bg-zinc-600"}`} />
+          </span>
+          {live ? "Live" : "Connecting…"}
         </div>
       </div>
 
+      {/* List */}
+      <div
+        className={`flex-1 overflow-y-auto p-4 space-y-2 max-h-[calc(100vh-200px)] transition-opacity duration-300 ${flash ? "opacity-50" : "opacity-100"
+          }`}
+      >
+        {loading && (
+          <div className="flex flex-col gap-2 mt-2">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-14 rounded-xl bg-surface-dark/40 animate-pulse" />
+            ))}
+          </div>
+        )}
+
+        {!loading && leaders.length === 0 && (
+          <p className="text-center text-secondary text-sm py-8">No scores yet. Be the first!</p>
+        )}
+
+        {!loading && leaders.map((entry) => {
+          const styles = rankStyle(entry.rank);
+          const isTopThree = entry.rank <= 3;
+
+          return (
+            <div
+              key={entry.id}
+              className={`flex items-center gap-3 p-3 rounded-xl hover:bg-surface-dark transition-colors cursor-pointer relative ${styles.row}`}
+            >
+              {entry.rank === 1 && (
+                <div className="absolute -left-[1px] top-3 bottom-3 w-1 bg-yellow-500 rounded-r" />
+              )}
+
+              {isTopThree ? (
+                <div className="relative shrink-0">
+                  <Avatar src={entry.avatar_url} name={entry.display_name} borderClass={styles.border} />
+                  <span
+                    className={`absolute -top-1 -right-1 w-5 h-5 ${styles.badge} rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm`}
+                  >
+                    {entry.rank}
+                  </span>
+                </div>
+              ) : (
+                <span className="w-10 text-center font-bold text-secondary text-sm shrink-0">
+                  {entry.rank}
+                </span>
+              )}
+
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-${isTopThree ? "bold" : "medium"} text-white truncate`}>
+                  {entry.display_name || "Anonymous"}
+                </p>
+                {isTopThree && (
+                  <p className="text-xs text-secondary">{entry.league}</p>
+                )}
+              </div>
+
+              <p className={`font-mono font-bold text-sm shrink-0 ${styles.score}`}>
+                {formatScore(entry.best_score)}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Your Ranking */}
       <div className="p-4 bg-surface-dark border-t border-border-dark shadow-[0_-5px_15px_rgba(0,0,0,0.3)] z-30">
-        <p className="text-xs text-secondary mb-2 uppercase tracking-wide font-semibold text-center">Your Ranking</p>
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 border border-primary/30">
-          <div
-            className="flex flex-col items-center justify-center w-10 h-10 bg-background-dark rounded-lg border border-border-dark text-primary font-bold shadow-inner">
-            <span className="text-xs leading-none">#</span>
-            <span className="text-lg leading-none">42</span>
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-bold text-white">You</p>
-            <p className="text-xs text-primary">Gold League</p>
-          </div>
-          <div className="flex flex-col items-end">
-            <p className="font-mono font-bold text-white">3,200</p>
-            <p className="text-[10px] text-green-400 flex items-center gap-0.5">
-              <span className="material-symbols-outlined text-[10px]">arrow_upward</span>
+        <p className="text-xs text-secondary mb-2 uppercase tracking-wide font-semibold text-center">
+          Your Ranking
+        </p>
 
-            </p>
+        {loading ? (
+          <div className="h-16 rounded-xl bg-background-dark animate-pulse" />
+        ) : (
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 border border-primary/30">
+            <div className="flex flex-col items-center justify-center w-10 h-10 bg-background-dark rounded-lg border border-border-dark text-primary font-bold shadow-inner shrink-0">
+              <span className="text-xs leading-none">#</span>
+              <span className="text-lg leading-none">{me?.rank ?? "—"}</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-white truncate">
+                {me?.display_name ?? "You"}
+              </p>
+              <p className="text-xs text-primary">{me?.league ?? "Bronze League"}</p>
+            </div>
+            <div className="flex flex-col items-end shrink-0">
+              <p className="font-mono font-bold text-white">
+                {formatScore(me?.best_score ?? 0)}
+              </p>
+              {me?.rank && me.rank <= 10 && (
+                <p className="text-[10px] text-green-400 flex items-center gap-0.5">
+                  <span className="material-symbols-outlined text-[10px]">arrow_upward</span>
+                  Top 10
+                </p>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </aside>
   );

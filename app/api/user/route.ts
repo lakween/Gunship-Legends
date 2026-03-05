@@ -10,7 +10,7 @@ export async function GET() {
         }
 
         const { data: profile, error: profileError } = await supabase
-            .from("user_profiles")
+            .from("profiles")
             .select("*")
             .eq("id", user.id)
             .single();
@@ -56,7 +56,7 @@ export async function PUT(request: Request) {
         }
 
         const { data, error } = await supabase
-            .from("user_profiles")
+            .from("profiles")
             .update({ [key]: value })
             .eq("id", user.id)
             .select()
