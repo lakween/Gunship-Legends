@@ -23,7 +23,7 @@ export function useCallApi(api: string) {
                     setData((payload as any).data ?? null);
                     setError((payload as any).error ?? null);
                 } else {
-                    setData(payload?.data);
+                    setData(payload);
                 }
             }
         } catch (err) {
