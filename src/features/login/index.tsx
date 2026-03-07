@@ -28,7 +28,7 @@ const LoginPage = () => {
                     </div>
 
                     <h1 className="text-white text-3xl font-black tracking-tighter uppercase italic">
-                        Flappy <span className="text-rose-500">Bird</span>
+                        Gunship <span className="text-rose-500">Legend</span>
                     </h1>
                 </div>
 

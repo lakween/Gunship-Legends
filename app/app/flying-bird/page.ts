@@ -1,2 +1,2 @@
-import FlappyBird from "@/src/features/flappy-bird"
+import FlappyBird from "@/src/features/game"
 export default FlappyBird 

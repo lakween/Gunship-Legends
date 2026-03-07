@@ -101,7 +101,7 @@ export default function Leaderboard() {
           schema: "public",
           table: "profiles",
         },
-        async () => {
+        async (payload: any) => {
           await fetchLeaderboard();
           setFlash(true);
           setTimeout(() => setFlash(false), 800);
@@ -114,12 +114,11 @@ export default function Leaderboard() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchLeaderboard]);
+  }, []);
 
   return (
     <aside className="hidden xl:flex flex-col w-80 h-full border-l border-border-dark bg-background-dark z-20">
 
-      {/* Header */}
       <div className="h-20 flex items-center justify-between px-6 border-b border-border-dark">
         <h3 className="text-lg font-bold text-white flex items-center gap-2">
           <span className="material-symbols-outlined text-yellow-500">trophy</span>
@@ -128,11 +127,11 @@ export default function Leaderboard() {
 
         {/* Live indicator */}
         <div className="relative flex items-center gap-1.5 text-xs text-secondary">
-          <span className="relative flex h-2 w-2">
+          <span className="relative flex h-3 w-3">
             {live && (
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75" />
             )}
-            <span className={`relative inline-flex rounded-full h-2 w-2 ${live ? "bg-green-500" : "bg-zinc-600"}`} />
+            <span className={`relative inline-flex rounded-full h-3 w-3 ${live ? "bg-green-500" : "bg-zinc-600"}`} />
           </span>
           {live ? "Live" : "Connecting…"}
         </div>
@@ -188,7 +187,7 @@ export default function Leaderboard() {
                   {entry.display_name || "Anonymous"}
                 </p>
                 {isTopThree && (
-                  <p className="text-xs text-secondary">{entry.league}</p>
+                  <p className="text-xs text-primary opacity-60">{entry.league}</p>
                 )}
               </div>
 
@@ -201,8 +200,8 @@ export default function Leaderboard() {
       </div>
 
       {/* Your Ranking */}
-      <div className="p-4 bg-surface-dark border-t border-border-dark shadow-[0_-5px_15px_rgba(0,0,0,0.3)] z-30">
-        <p className="text-xs text-secondary mb-2 uppercase tracking-wide font-semibold text-center">
+      <div className="p-4 border-t border-border-dark shadow-[0_-5px_15px_rgba(0,0,0,0.3)] z-30">
+        <p className="text-xs text-primary mb-2 uppercase tracking-wide font-semibold text-center">
           Your Ranking
         </p>
 
@@ -211,14 +210,14 @@ export default function Leaderboard() {
         ) : (
           <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 border border-primary/30">
             <div className="flex flex-col items-center justify-center w-10 h-10 bg-background-dark rounded-lg border border-border-dark text-primary font-bold shadow-inner shrink-0">
-              <span className="text-xs leading-none">#</span>
+              <span className="text-xs  leading-none">#</span>
               <span className="text-lg leading-none">{me?.rank ?? "—"}</span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-white truncate">
                 {me?.display_name ?? "You"}
               </p>
-              <p className="text-xs text-primary">{me?.league ?? "Bronze League"}</p>
+              <p className="text-xs text-primary opacity-60">{me?.league ?? "Bronze League"}</p>
             </div>
             <div className="flex flex-col items-end shrink-0">
               <p className="font-mono font-bold text-white">

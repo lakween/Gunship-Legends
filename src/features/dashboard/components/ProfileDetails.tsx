@@ -48,8 +48,6 @@ export default function ProfileDetails() {
   const { data, error, loading, refresh } = useCallApi('/api/user');
   const { form, setForm, onChange } = useForm();
 
-  console.log(data,'data')
-
   useEffect(() => { setForm(data); }, [data]);
 
   const onSaveHandler = async (key: string, value: string) => {
@@ -81,13 +79,13 @@ export default function ProfileDetails() {
       <div className="h-20 flex items-center px-6 border-b border-border-dark shrink-0">
         <div className="flex items-center gap-2 text-primary">
           <span className="material-symbols-outlined text-3xl">playing_cards</span>
-          <span className="text-xl font-bold tracking-tight text-white">
-            Flybird <span className="text-primary font-light">Game</span>
+          <span className="text-xl font-bold tracking-tight text-primary">
+            Gunship <span className="text-primary font-light">Legend</span>
           </span>
         </div>
       </div>
 
-      <div className="flex flex-col gap-5 p-6 overflow-y-auto max-h-[calc(100vh-200px)]">
+      <div className="flex flex-col gap-5 p-6 overflow-y-auto max-h-[calc(100vh-220px)]">
 
         {/* Avatar + Name */}
         <div className="flex flex-col items-center text-center gap-3">
@@ -101,7 +99,7 @@ export default function ProfileDetails() {
                   className="h-full w-full rounded-full object-cover"
                 />
               ) : (
-                <div className="h-full w-full rounded-full bg-surface-dark flex items-center justify-center text-2xl font-bold text-white">
+                <div className="h-full w-full rounded-full bg-surface-dark flex items-center justify-center text-2xl font-bold text-primary">
                   {data?.display_name?.charAt(0)?.toUpperCase() ?? "?"}
                 </div>
               )}
@@ -110,14 +108,14 @@ export default function ProfileDetails() {
           </div>
 
           <div>
-            <h2 className="text-xl font-bold text-white leading-tight">
+            <h2 className="text-xl font-bold text-primary leading-tight">
               {loading ? (
-                <span className="inline-block w-32 h-5 bg-surface-dark animate-pulse rounded" />
+                <span className="inline-block w-32 h-5 bg-primary animate-pulse rounded" />
               ) : (
                 data?.display_name ?? "—"
               )}
             </h2>
-            <p className="text-secondary text-sm mt-0.5">
+            <p className="text-primary text-sm mt-0.5">
               {data?.first_name} {data?.last_name}
             </p>
           </div>
@@ -138,7 +136,7 @@ export default function ProfileDetails() {
             </div>
             {nextLeague && (
               <div className="flex items-center gap-1.5">
-                <span className="text-xs text-secondary font-bold">{nextLeague.name}</span>
+                <span className="text-xs text-primary font-bold">{nextLeague.name}</span>
                 <LeagueIcon name={nextLeague.name} />
               </div>
             )}
@@ -156,9 +154,9 @@ export default function ProfileDetails() {
           </div>
 
           <div className="flex items-center justify-between mt-2">
-            <span className="text-xs text-secondary">{progress}%</span>
+            <span className="text-xs text-primary">{progress}%</span>
             {!isMaster && (
-              <span className="text-xs text-secondary">
+              <span className="text-xs text-primary">
                 <span className={`font-bold ${league.text}`}>{pointsToNext}</span> pts to {nextLeague?.name}
               </span>
             )}
@@ -173,7 +171,7 @@ export default function ProfileDetails() {
             { label: "Last Name", name: "last_name" },
           ].map(({ label, name }) => (
             <div key={name} className="flex justify-between items-center">
-              <span className="text-secondary text-sm">{label}</span>
+              <span className="text-primary text-sm">{label}</span>
               <EditableFormInput
                 name={name}
                 value={form?.[name] || ""}
@@ -189,11 +187,11 @@ export default function ProfileDetails() {
           {/* Best Score — full width */}
           <div className="col-span-2 bg-surface-dark p-4 rounded-xl border border-border-dark flex items-center justify-between">
             <div>
-              <p className="text-secondary text-xs uppercase tracking-wider font-semibold">Best Score</p>
+              <p className="text-primary text-xs uppercase tracking-wider font-semibold">Best Score</p>
               {loading ? (
-                <div className="w-16 h-7 bg-background-dark animate-pulse rounded mt-1" />
+                <div className="w-16 h-7 bg-primary animate-pulse rounded mt-1" />
               ) : (
-                <p className="text-2xl font-bold text-white mt-1">{bestScore.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-primary mt-1">{bestScore.toLocaleString()}</p>
               )}
             </div>
             <span className="material-symbols-outlined text-yellow-500 text-3xl">emoji_events</span>
@@ -201,22 +199,22 @@ export default function ProfileDetails() {
 
           {/* Plays */}
           <div className="bg-surface-dark p-3 rounded-xl border border-border-dark">
-            <p className="text-secondary text-xs uppercase tracking-wider font-semibold">Plays</p>
+            <p className="text-primary text-xs uppercase tracking-wider font-semibold">Plays</p>
             {loading ? (
-              <div className="w-10 h-6 bg-background-dark animate-pulse rounded mt-1" />
+              <div className="w-10 h-6 bg-primary animate-pulse rounded mt-1" />
             ) : (
-              <p className="text-xl font-bold text-white mt-1">{totalPlays.toLocaleString()}</p>
+              <p className="text-xl font-bold text-primary mt-1">{totalPlays.toLocaleString()}</p>
             )}
           </div>
 
           {/* Latest */}
           <div className="bg-surface-dark p-3 rounded-xl border border-border-dark">
-            <p className="text-secondary text-xs uppercase tracking-wider font-semibold">Latest</p>
+            <p className="text-primary text-xs uppercase tracking-wider font-semibold">Latest</p>
             {loading ? (
-              <div className="w-10 h-6 bg-background-dark animate-pulse rounded mt-1" />
+              <div className="w-10 h-6 bg-primary animate-pulse rounded mt-1" />
             ) : (
               <div className="flex items-end gap-1 mt-1">
-                <p className="text-xl font-bold text-white">{latestScore.toLocaleString()}</p>
+                <p className="text-xl font-bold text-primary">{latestScore.toLocaleString()}</p>
                 {latestScore > 0 && latestScore >= bestScore * 0.8 && (
                   <span className="text-green-400 text-xs mb-0.5">↑</span>
                 )}
@@ -227,11 +225,11 @@ export default function ProfileDetails() {
           {/* Avg score (derived) */}
           <div className="col-span-2 bg-surface-dark p-3 rounded-xl border border-border-dark flex items-center justify-between">
             <div>
-              <p className="text-secondary text-xs uppercase tracking-wider font-semibold">Avg Score</p>
+              <p className="text-primary text-xs uppercase tracking-wider font-semibold">Avg Score</p>
               {loading ? (
-                <div className="w-12 h-6 bg-background-dark animate-pulse rounded mt-1" />
+                <div className="w-12 h-6 bg-primary animate-pulse rounded mt-1" />
               ) : (
-                <p className="text-xl font-bold text-white mt-1">
+                <p className="text-xl font-bold text-primary mt-1">
                   {totalPlays > 0 ? Math.round(bestScore / totalPlays).toLocaleString() : "—"}
                 </p>
               )}
