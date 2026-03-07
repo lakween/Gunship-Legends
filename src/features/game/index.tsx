@@ -51,7 +51,7 @@ const CFG = {
 
   // ── Player ────────────────────────────────────────────────────────────────
   player: {
-    startHp:       10,   // starting health (also the max)
+    startHp:       5,   // starting health (also the max)
     speed:         3.5,  // movement speed (px / frame)
     invincibleFrames: 108, // invincibility frames after being hit
   },
@@ -589,7 +589,7 @@ export default function GunshipLegend() {
   const triggerGameOver = useCallback(async () => {
     if (scoreSubmitted.current) return;
     scoreSubmitted.current = true; overRef.current = true; setGameOver(true);
-    try { await fetch("/api/game/submit-score",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({score:gs.current.score})}); }
+    try { await fetch("/api/submit-score",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({score:gs.current.score})}); }
     catch { toast.error("Failed to submit score"); }
   }, []);
 
@@ -652,14 +652,14 @@ export default function GunshipLegend() {
       const scoreBg=new PIXI.Graphics(); scoreBg.beginFill(0x000000,0.45).drawRoundedRect(W/2-55,8,110,34,8).endFill(); scoreBg.lineStyle(1,0x4488bb,0.22).drawRoundedRect(W/2-55,8,110,34,8).lineStyle(0); hudLayer.addChild(scoreBg);
       const scoreTxt=new PIXI.Text("0000",{fontFamily:"'Courier New',monospace",fontSize:22,fontWeight:"bold",fill:0x88ddff,dropShadow:true,dropShadowColor:0x0044aa,dropShadowBlur:10,dropShadowDistance:0}); scoreTxt.x=W/2-scoreTxt.width/2; scoreTxt.y=12; hudLayer.addChild(scoreTxt);
       const hpBg2=new PIXI.Graphics(); hpBg2.beginFill(0x000000,0.45).drawRoundedRect(10,8,CFG.player.startHp*22+14,34,8).endFill(); hpBg2.lineStyle(1,0xaa3333,0.22).drawRoundedRect(10,8,CFG.player.startHp*22+14,34,8).lineStyle(0); hudLayer.addChild(hpBg2);
-      const hpLbl=new PIXI.Text("HULL",{fontFamily:"monospace",fontSize:9,fill:0xff9999,alpha:0.7}); hpLbl.x=16; hpLbl.y=13; hudLayer.addChild(hpLbl);
+      const hpLbl=new PIXI.Text("HULL",{fontFamily:"monospace",fontSize:9,fill:0xff9999,dropShadowAlpha:0.7}); hpLbl.x=16; hpLbl.y=13; hudLayer.addChild(hpLbl);
       const hpBars=Array.from({length:CFG.player.startHp},()=>{const b=new PIXI.Graphics();hudLayer.addChild(b);return b;});
       const wpPanel=new PIXI.Graphics(); wpPanel.beginFill(0x000000,0.44).drawRoundedRect(10,H-68,210,56,8).endFill(); wpPanel.lineStyle(1,0x4466aa,0.18).drawRoundedRect(10,H-68,210,56,8).lineStyle(0); hudLayer.addChild(wpPanel);
       const wpTxt  =new PIXI.Text("",{fontFamily:"monospace",fontSize:10,fill:0x88ccff}); wpTxt.x=16; wpTxt.y=H-64; hudLayer.addChild(wpTxt);
       const ammoBar=new PIXI.Text("",{fontFamily:"monospace",fontSize:8.5,fill:0xffee88}); ammoBar.x=16; ammoBar.y=H-50; hudLayer.addChild(ammoBar);
-      const hintTxt=new PIXI.Text("1=CANNON  2=MISSILE  3=SPREAD  4=PLASMA  SPACE=FIRE",{fontFamily:"monospace",fontSize:7,fill:0x6688aa,alpha:0.55}); hintTxt.x=16; hintTxt.y=H-30; hudLayer.addChild(hintTxt);
-      const todTxt =new PIXI.Text("",{fontFamily:"monospace",fontSize:8,fill:0xaabbcc,alpha:0.5}); todTxt.x=W-70; todTxt.y=H-22; hudLayer.addChild(todTxt);
-      const killTxt=new PIXI.Text("",{fontFamily:"monospace",fontSize:9,fill:0xffcc44,alpha:0.6}); killTxt.anchor.set(1,0); killTxt.x=W-10; killTxt.y=50; hudLayer.addChild(killTxt);
+      const hintTxt=new PIXI.Text("1=CANNON  2=MISSILE  3=SPREAD  4=PLASMA  SPACE=FIRE",{fontFamily:"monospace",fontSize:7,fill:0x6688aa,dropShadowAlpha:0.55}); hintTxt.x=16; hintTxt.y=H-30; hudLayer.addChild(hintTxt);
+      const todTxt =new PIXI.Text("",{fontFamily:"monospace",fontSize:8,fill:0xaabbcc,dropShadowAlpha:0.5}); todTxt.x=W-70; todTxt.y=H-22; hudLayer.addChild(todTxt);
+      const killTxt=new PIXI.Text("",{fontFamily:"monospace",fontSize:9,fill:0xffcc44,dropShadowAlpha:0.6}); killTxt.anchor.set(1,0); killTxt.x=W-10; killTxt.y=50; hudLayer.addChild(killTxt);
       const comboTxt=new PIXI.Text("",{fontFamily:"monospace",fontSize:14,fontWeight:"bold",fill:0xffcc44}); comboTxt.anchor.set(0.5,0); comboTxt.x=W/2; comboTxt.y=46; hudLayer.addChild(comboTxt);
 
       // ── TICKER ────────────────────────────────────────────────────────────
@@ -1022,8 +1022,9 @@ export default function GunshipLegend() {
         setUiState({weapon:s.weapon as WeaponType,ammo:{...s.ammo},hp:s.hp,tod:s.tod,combo:s.combo});
       });
 
-      const onDown=(e:KeyboardEvent)=>{if(e.code==="Space")e.preventDefault();keysRef.current.add(e.code);if(!startedRef.current&&!overRef.current){startedRef.current=true;setGameStarted(true);}};
-      const onUp=(e:KeyboardEvent)=>keysRef.current.delete(e.code);
+      const isTyping=()=>{const el=document.activeElement;if(!el)return false;const tag=el.tagName.toLowerCase();return tag==="input"||tag==="textarea"||(el as HTMLElement).isContentEditable;};
+      const onDown=(e:KeyboardEvent)=>{if(isTyping())return;if(e.code==="Space")e.preventDefault();keysRef.current.add(e.code);if(e.code==="Space"&&!startedRef.current&&!overRef.current){startedRef.current=true;setGameStarted(true);}};
+      const onUp=(e:KeyboardEvent)=>{if(isTyping())return;keysRef.current.delete(e.code);};
       window.addEventListener("keydown",onDown); window.addEventListener("keyup",onUp);
 
       // ── Mouse controls ────────────────────────────────────────────
@@ -1036,7 +1037,7 @@ export default function GunshipLegend() {
       };
       const onMouseMove=(e:MouseEvent)=>{
         const p=getCanvasPos(e); mouseRef.current.x=p.x; mouseRef.current.y=p.y;
-        if(!startedRef.current&&!overRef.current){startedRef.current=true;setGameStarted(true);}
+        // Game does NOT start on mouse move — only Space key or click starts it
       };
       const onMouseDown=(e:MouseEvent)=>{ mouseRef.current.down=true; if(!startedRef.current&&!overRef.current){startedRef.current=true;setGameStarted(true);} };
       const onMouseUp=()=>{ mouseRef.current.down=false; };
@@ -1172,7 +1173,7 @@ export default function GunshipLegend() {
             onTouchStart={e=>{e.preventDefault();if(!startedRef.current&&!overRef.current){startedRef.current=true;setGameStarted(true);}}}>
             <p className="text-[10px] tracking-[0.45em] text-blue-400/40 uppercase">Classified Mission</p>
             <h1 className="text-4xl font-black tracking-[0.15em] text-white">
-              HELI <span style={{ color: "#44aaff", textShadow: "0 0 22px #44aaff88" }}>ASSAULT</span>
+              Gunship <span style={{ color: "#44aaff", textShadow: "0 0 22px #44aaff88" }}>Legend</span>
             </h1>
             <div className="h-px w-64 bg-gradient-to-r from-transparent via-blue-500/35 to-transparent" />
             <div className="grid grid-cols-3 gap-x-5 gap-y-2 text-[10px] mt-1">
@@ -1187,7 +1188,7 @@ export default function GunshipLegend() {
               <p><span className="text-blue-300/50">MOUSE</span> <span className="text-white/75">move cursor to fly · click/hold to fire</span></p>
               <p><span className="text-blue-300/50">MOBILE</span> <span className="text-white/75">touch to fly · hold FIRE · tap weapon icons</span></p>
             </div>
-            <p className="text-blue-400/28 text-[10px] animate-pulse tracking-[0.5em] mt-2">TAP OR PRESS ANY KEY</p>
+            <p className="text-blue-400/28 text-[10px] animate-pulse tracking-[0.5em] mt-2">TAP OR PRESS SPACE TO START</p>
           </div>
         )}
 
@@ -1208,6 +1209,7 @@ export default function GunshipLegend() {
               onTouchStart={e=>{e.preventDefault();resetGame();}}>
               🔄 FLY AGAIN
             </button>
+            <p className="text-white/20 text-[10px] tracking-widest mt-1">SPACE to restart</p>
           </div>
         )}
       </div>

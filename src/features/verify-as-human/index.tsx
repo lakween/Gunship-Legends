@@ -62,7 +62,7 @@ const VerifyASHumanPage: React.FC = () => {
 
     return (
         <div className="p-4">
-            <h1 className="text-xl text-center font-semibold mb-2">Verify As Human</h1>
+            <h1 className="text-xl text-center font-semibold mb-2">Before you navigate the game, you must solve this.</h1>
             <p className=" text-center">Count the hearts in the picture and enter the number below.</p>
             {
                 error && <MessageBox type={"error"} message={error} />
