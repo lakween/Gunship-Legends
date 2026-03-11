@@ -49,18 +49,19 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isApiRoute = pathname.startsWith("/api");
-  const isVerificationPage = pathname === "/app/verify-as-human";
-  const isHuman = request.cookies.get("is_human_verified")?.value === "true";
+  const isHeartQuestionPage = pathname === "/app/heart-question";
+  const isHuman = request.cookies.get("heart_question_solved")?.value === "true";
 
   const isPublicRoute =
     request.nextUrl.pathname === "/" ||
     request.nextUrl.pathname.startsWith("/auth") ||
+    request.nextUrl.pathname.startsWith("/app/confirmation-success") ||
     request.nextUrl.pathname.startsWith("/api/sign-up") ||
     request.nextUrl.pathname.startsWith("/api/login")
 
-  if (user && !isHuman && !isPublicRoute && !isVerificationPage && !isApiRoute) {
+  if (user && !isHuman && !isPublicRoute && !isHeartQuestionPage && !isApiRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = "/app/verify-as-human";
+    url.pathname = "/app/heart-question";
     return NextResponse.redirect(url);
   }
 

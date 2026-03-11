@@ -1,2 +1,2 @@
-import DashboardPage from "@/src/features/dashboard"
-export default DashboardPage
+import Dashboard from "./dashboard";
+export default Dashboard

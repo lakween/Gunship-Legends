@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import FormInput from "@/src/common/FormInput";
-import useForm from "@/src/hooks/useForm";
+import useForm from "@/hooks/useForm";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";

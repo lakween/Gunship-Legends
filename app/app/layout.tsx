@@ -33,7 +33,7 @@ export default function ProtectedLayout({
 
         <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-2">
           <p>
-            by{" "}
+            Designed and developed by{" "}
             <a
               href="https://www.linkedin.com/in/lakween-senathilake-6611221a6"
               target="_blank"
