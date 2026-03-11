@@ -18,6 +18,7 @@ import { SignUpFormValues, signUpSchema } from "../schema";
 import { signUpAction } from "../actions";
 import FormInput from "@/components/common/FormInput";
 
+
 // ── Types ─────────────────────────────────────────────────────────────────
 type FormFields = Partial<SignUpFormValues>;
 type FormErrors = Partial<Record<keyof SignUpFormValues, string>>;
