@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import FormInput from "@/src/common/FormInput";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -17,6 +16,7 @@ import { toast } from "sonner";
 import { ValidationError } from "yup";
 import { SignUpFormValues, signUpSchema } from "../schema";
 import { signUpAction } from "../actions";
+import FormInput from "@/components/common/FormInput";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 type FormFields = Partial<SignUpFormValues>;
