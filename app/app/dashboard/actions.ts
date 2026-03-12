@@ -22,7 +22,7 @@ export async function getProfileAction() {
 
 // ── Update profile field ──────────────────────────────────────────────────────
 export async function updateProfileAction(key: string, value: string) {
-  const allowedFields = ["display_name", "first_name", "last_name"];
+  const allowedFields = ["display_name", "first_name", "last_name", "avatar_url"];
 
   if (!allowedFields.includes(key)) {
     return { success: false, error: "Invalid field" };
@@ -161,4 +161,57 @@ export async function uploadAvatar(formData: FormData) {
   if (dbError) throw new Error(dbError.message)
 
   return { url: publicUrl }
+}
+
+const BUCKET = "profile pictures";
+const MAX_MB = 2;
+const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+export async function uploadAvatarAction(
+  formData: FormData
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  const supabase = await createClient();
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return { success: false, error: "Not authenticated" };
+
+  const file = formData.get("avatar") as File | null;
+  if (!file || file.size === 0) return { success: false, error: "No file provided" };
+
+  if (!ALLOWED.includes(file.type)) {
+    return { success: false, error: "Only JPG, PNG, WEBP, or GIF files are allowed." };
+  }
+
+  if (file.size > MAX_MB * 1024 * 1024) {
+    return { success: false, error: `File must be smaller than ${MAX_MB}MB.` };
+  }
+
+  const ext = file.name.split(".").pop() ?? "jpg";
+  const path = `${user.id}/avatar.${ext}`;
+
+  // Convert File → ArrayBuffer → Buffer for server-side upload
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  const { error: storageError } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, buffer, { upsert: true, contentType: file.type });
+
+  if (storageError) return { success: false, error: storageError.message };
+
+  const { data: { publicUrl } } = supabase.storage
+    .from(BUCKET)
+    .getPublicUrl(path);
+
+  // Bust cache so browser loads new image immediately
+  const bustedUrl = `${publicUrl}?t=${Date.now()}`;
+
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({ avatar_url: bustedUrl })
+    .eq("id", user.id);
+
+  if (updateError) return { success: false, error: updateError.message };
+
+  return { success: true, url: bustedUrl };
 }

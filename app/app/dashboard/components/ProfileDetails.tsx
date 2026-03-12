@@ -84,12 +84,12 @@ export default function ProfileDetails({ mobile = false }: { mobile?: boolean })
         <div className="relative group">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-purple-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-200" />
           <div className="relative h-24 w-24 rounded-full p-[2px] bg-background-dark">
-            {/* <AvatarUpload  /> */}
-            {data?.avatar_url
+            <AvatarUpload currentUrl={data?.avatar_url} displayName={data?.display_name} />
+            {/* {data?.avatar_url
               ? <img src={data.avatar_url} alt="Profile avatar" className="h-full w-full rounded-full object-cover" />
-              : <div className="h-full w-full rounded-full bg-surface-dark flex items-center justify-center text-2xl font-bold text-primary">{data?.display_name?.charAt(0)?.toUpperCase() ?? "?"}</div>}
+              : <div className="h-full w-full rounded-full bg-surface-dark flex items-center justify-center text-2xl font-bold text-primary">{data?.display_name?.charAt(0)?.toUpperCase() ?? "?"}</div>} */}
           </div>
-          <div className="absolute bottom-1 right-1 h-5 w-5 bg-green-500 rounded-full border-4 border-background-dark" />
+          {/* <div className="absolute bottom-1 right-1 h-5 w-5 bg-green-500 rounded-full border-4 border-background-dark" /> */}
         </div>
         <div>
           <h2 className="text-xl font-bold text-primary leading-tight">

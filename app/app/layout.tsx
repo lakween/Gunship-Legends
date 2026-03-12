@@ -21,7 +21,7 @@ export default function ProtectedLayout({
             </Suspense>
           </div>
         </nav>
-        <div className="h-full">
+        <div className="h-full min-h-[calc(100vh-70px)] md:min-h-[84vh]">
           {children}
         </div>
 

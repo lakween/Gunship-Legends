@@ -1,191 +1,216 @@
-'use client'
+"use client";
 
-import { useState, useRef } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Loader2, Upload, Camera, X, CheckCircle2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { uploadAvatar } from '@/app/app/dashboard/actions'
+import { useRef, useState } from "react";
+import { toast } from "sonner";
+import { Loader2, Camera, X } from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { uploadAvatarAction } from "@/app/app/dashboard/actions";
 
-export default function AvatarUpload({ currentUrl, username }: { currentUrl?: string; username?: string }) {
-    const [preview, setPreview] = useState<string | null>(currentUrl || null)
-    const [selectedFile, setSelectedFile] = useState<File | null>(null)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
-    const [success, setSuccess] = useState(false)
-    const [isDragging, setIsDragging] = useState(false)
-    const inputRef = useRef<HTMLInputElement>(null)
+interface AvatarUploadProps {
+    currentUrl: string | null;
+    displayName?: string;
+    size?: "sm" | "md" | "lg";
+    onUploaded?: (url: string) => void;
+}
 
-    function handleFileChange(file: File) {
-        setError(null)
-        setSuccess(false)
+const SIZE = {
+    sm: { wrap: "h-12 w-12", text: "text-base", camera: "h-4 w-4", badge: "h-5 w-5" },
+    md: { wrap: "h-20 w-20", text: "text-2xl", camera: "h-4 w-4", badge: "h-6 w-6" },
+    lg: { wrap: "h-24 w-24", text: "text-3xl", camera: "h-5 w-5", badge: "h-7 w-7" },
+};
 
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
-        if (!allowedTypes.includes(file.type)) {
-            setError('Only JPG, PNG, and WebP files are allowed.')
-            return
+const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_MB = 2;
+
+export default function AvatarUpload({
+    currentUrl,
+    displayName,
+    size = "lg",
+    onUploaded,
+}: AvatarUploadProps) {
+    const [preview, setPreview] = useState<string | null>(null);
+    const [file, setFile] = useState<File | null>(null);
+    const [open, setOpen] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const s = SIZE[size];
+
+    const initials = displayName
+        ? displayName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()
+        : "?";
+
+    const displayUrl = preview ?? currentUrl;
+
+    // ── Pick file ─────────────────────────────────────────────────────────────
+    const onFilePicked = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const picked = e.target.files?.[0];
+        if (!picked) return;
+
+        if (!ALLOWED.includes(picked.type)) {
+            toast.error("Only JPG, PNG, WEBP, or GIF files are allowed.");
+            return;
         }
-        if (file.size > 5 * 1024 * 1024) {
-            setError('File size must be under 5MB.')
-            return
+        if (picked.size > MAX_MB * 1024 * 1024) {
+            toast.error(`File must be smaller than ${MAX_MB}MB.`);
+            return;
         }
 
-        setSelectedFile(file)
-        setPreview(URL.createObjectURL(file))
-    }
+        setFile(picked);
+        setPreview(URL.createObjectURL(picked));
+        setOpen(true);
+        e.target.value = "";
+    };
 
-    function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0]
-        if (file) handleFileChange(file)
-    }
-
-    function handleDrop(e: React.DragEvent) {
-        e.preventDefault()
-        setIsDragging(false)
-        const file = e.dataTransfer.files?.[0]
-        if (file) handleFileChange(file)
-    }
-
-    function handleClear() {
-        setPreview(currentUrl || null)
-        setSelectedFile(null)
-        setError(null)
-        setSuccess(false)
-        if (inputRef.current) inputRef.current.value = ''
-    }
-
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault()
-        if (!selectedFile) return
-
-        setLoading(true)
-        setError(null)
-        setSuccess(false)
+    // ── Upload via server action ───────────────────────────────────────────────
+    const handleUpload = async () => {
+        if (!file) return;
+        setUploading(true);
 
         try {
-            const formData = new FormData()
-            formData.append('avatar', selectedFile)
-            const { url }: any = await uploadAvatar(formData)
-            setPreview(url)
-            setSelectedFile(null)
-            setSuccess(true)
-        } catch (err: any) {
-            setError(err.message)
-        } finally {
-            setLoading(false)
-        }
-    }
+            const formData = new FormData();
+            formData.append("avatar", file);
 
-    const initials = username
-        ?.split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+            const result = await uploadAvatarAction(formData);
+
+            if (!result.success) throw new Error(result.error);
+
+            setPreview(result.url!);
+            onUploaded?.(result.url!);
+            toast.success("Profile picture updated!");
+            setOpen(false);
+            setFile(null);
+        } catch (err: any) {
+            toast.error(err.message ?? "Upload failed. Please try again.");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleCancel = () => {
+        setOpen(false);
+        setFile(null);
+        setPreview(currentUrl);
+    };
 
     return (
-        <Card className="w-full max-w-md mx-auto">
-            <CardHeader className="space-y-1 pb-4">
-                <CardTitle className="text-xl">Profile Photo</CardTitle>
-                <CardDescription>Upload a photo to personalize your profile.</CardDescription>
-            </CardHeader>
+        <>
+            {/* ── Avatar trigger ─────────────────────────────────────────────── */}
+            <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                className={cn(
+                    "relative group rounded-full shrink-0 focus:outline-none",
+                    "focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                    s.wrap,
+                )}
+                aria-label="Change profile picture"
+            >
+                {/* Glow ring */}
+                <span className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-primary to-purple-600 blur opacity-70 group-hover:opacity-100 transition duration-200 pointer-events-none" />
 
-            <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Avatar or initials */}
+                <span className={cn("relative flex h-full w-full rounded-full overflow-hidden bg-surface-dark border-2 border-background-dark", s.wrap)}>
+                    {displayUrl ? (
+                        <img
+                            src={displayUrl}
+                            alt={displayName ?? "Avatar"}
+                            className="h-full w-full object-cover"
+                        />
+                    ) : (
+                        <span className={cn("flex h-full w-full items-center justify-center font-bold text-primary", s.text)}>
+                            {initials}
+                        </span>
+                    )}
+                </span>
 
-                    {/* Avatar Preview + Drop Zone */}
-                    <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+                {/* Camera badge */}
+                <span className={cn(
+                    "absolute bottom-0 right-0 flex items-center justify-center rounded-full",
+                    "bg-primary border-2 border-background-dark text-primary-foreground",
+                    "opacity-0 group-hover:opacity-100 transition-opacity",
+                    s.badge,
+                )}>
+                    <Camera className={s.camera} />
+                </span>
+            </button>
 
-                        {/* Avatar */}
-                        <div className="relative shrink-0">
-                            <Avatar className="w-24 h-24 ring-2 ring-border">
-                                <AvatarImage src={preview ?? undefined} alt="Avatar preview" className="object-cover" />
-                                <AvatarFallback className="text-lg font-medium bg-muted">
-                                    {initials ?? <Camera className="w-6 h-6 text-muted-foreground" />}
-                                </AvatarFallback>
-                            </Avatar>
+            {/* Hidden file input */}
+            <input
+                ref={inputRef}
+                type="file"
+                accept={ALLOWED.join(",")}
+                className="hidden"
+                onChange={onFilePicked}
+            />
 
-                            {/* Clear button */}
-                            {selectedFile && (
-                                <button
-                                    type="button"
-                                    onClick={handleClear}
-                                    className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center shadow-sm hover:opacity-90 transition-opacity"
-                                >
-                                    <X className="w-3 h-3" />
-                                </button>
+            {/* ── Confirm dialog ──────────────────────────────────────────────── */}
+            <Dialog open={open} onOpenChange={(v) => { if (!v) handleCancel(); }}>
+                <DialogContent className="sm:max-w-sm w-[calc(100vw-2rem)] bg-background-dark border-border-dark">
+                    <DialogHeader>
+                        <DialogTitle className="text-primary">Update Profile Picture</DialogTitle>
+                    </DialogHeader>
+
+                    <div className="flex flex-col items-center gap-5 py-2">
+                        {/* Preview */}
+                        <div className="relative h-32 w-32 rounded-full overflow-hidden bg-surface-dark border-2 border-border-dark">
+                            {preview ? (
+                                <img src={preview} alt="Preview" className="h-full w-full object-cover" />
+                            ) : (
+                                <span className="flex h-full w-full items-center justify-center text-4xl font-bold text-primary">
+                                    {initials}
+                                </span>
                             )}
                         </div>
 
-                        {/* Drop Zone */}
-                        <div
-                            onClick={() => inputRef.current?.click()}
-                            onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
-                            onDragLeave={() => setIsDragging(false)}
-                            onDrop={handleDrop}
-                            className={cn(
-                                'flex-1 w-full min-h-[96px] border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-colors px-4 py-4 text-center',
-                                isDragging
-                                    ? 'border-primary bg-primary/5'
-                                    : 'border-border hover:border-primary/50 hover:bg-muted/50'
-                            )}
-                        >
-                            <Upload className="w-5 h-5 text-muted-foreground" />
-                            <p className="text-sm font-medium text-foreground">
-                                {selectedFile ? selectedFile.name : 'Click or drag to upload'}
+                        <div className="text-center">
+                            <p className="text-sm text-primary font-medium truncate max-w-[220px]">{file?.name}</p>
+                            <p className="text-xs text-secondary mt-0.5">
+                                {file ? `${(file.size / 1024).toFixed(0)} KB` : ""}
                             </p>
-                            <p className="text-xs text-muted-foreground">JPG, PNG, WebP — max 5MB</p>
                         </div>
+
+                        {/* Actions */}
+                        <div className="flex w-full gap-3">
+                            <Button
+                                variant="outline"
+                                className="flex-1"
+                                onClick={handleCancel}
+                                disabled={uploading}
+                            >
+                                <X className="h-4 w-4 mr-1.5" />
+                                Cancel
+                            </Button>
+                            <Button
+                                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                                onClick={handleUpload}
+                                disabled={uploading}
+                            >
+                                {uploading
+                                    ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" />Uploading…</>
+                                    : <><Camera className="h-4 w-4 mr-1.5" />Save</>
+                                }
+                            </Button>
+                        </div>
+
+                        {/* Re-pick */}
+                        <button
+                            type="button"
+                            className="text-xs text-secondary underline underline-offset-4 hover:text-primary transition-colors"
+                            onClick={() => inputRef.current?.click()}
+                            disabled={uploading}
+                        >
+                            Choose a different photo
+                        </button>
                     </div>
-
-                    {/* Hidden input */}
-                    <input
-                        ref={inputRef}
-                        type="file"
-                        name="avatar"
-                        accept="image/jpeg,image/png,image/webp"
-                        onChange={handleInputChange}
-                        className="hidden"
-                    />
-
-                    {/* Error */}
-                    {error && (
-                        <Alert variant="destructive" className="py-2">
-                            <AlertDescription className="text-sm">{error}</AlertDescription>
-                        </Alert>
-                    )}
-
-                    {/* Success */}
-                    {success && (
-                        <Alert className="py-2 border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-300">
-                            <CheckCircle2 className="w-4 h-4" />
-                            <AlertDescription className="text-sm">Photo updated successfully!</AlertDescription>
-                        </Alert>
-                    )}
-
-                    {/* Submit */}
-                    <Button
-                        type="submit"
-                        disabled={!selectedFile || loading}
-                        className="w-full"
-                    >
-                        {loading ? (
-                            <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Uploading...
-                            </>
-                        ) : (
-                            <>
-                                <Upload className="w-4 h-4 mr-2" />
-                                Save Photo
-                            </>
-                        )}
-                    </Button>
-
-                </form>
-            </CardContent>
-        </Card>
-    )
+                </DialogContent>
+            </Dialog>
+        </>
+    );
 }
