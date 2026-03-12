@@ -116,3 +116,49 @@ export async function submitScoreAction(score: number): Promise<{ success: boole
     return { success: false, error: "Unexpected error" };
   }
 }
+
+
+export async function uploadAvatar(formData: FormData) {
+  const supabase = await createClient()
+
+  const { data } = await supabase.auth.getClaims()
+  const user = data?.claims
+  if (!user) return { success: false, error: "Not authenticated" };
+
+  // 2. Validate file
+  const file = formData.get('avatar') as File
+  if (!file || file.size === 0) throw new Error('No file provided')
+
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+  if (!allowedTypes.includes(file.type)) return { success: false, error: "Invalid file type" }
+  if (file.size > 5 * 1024 * 1024) return { success: false, error: "File exceeds 5MB limit" }
+
+  // 3. Upload to storage
+  const ext = file.name.split('.').pop()
+  const filePath = `${user.sub}/avatar.${ext}`
+  const bytes = await file.arrayBuffer()
+
+  const { data: storageData, error: storageError } = await supabase.storage
+    .from('profile pictures')
+    .upload(filePath, Buffer.from(bytes), {
+      contentType: file.type,
+      upsert: true,
+    })
+
+  if (storageError) throw new Error(storageError.message)
+
+  // 4. Get public URL
+  const { data: { publicUrl } } = supabase.storage
+    .from('profile pictures')
+    .getPublicUrl(storageData.path)
+
+  // 5. Save to profiles table
+  const { error: dbError } = await supabase
+    .from('profiles')
+    .update({ avatar_url: publicUrl })
+    .eq('id', user.sub)
+
+  if (dbError) throw new Error(dbError.message)
+
+  return { url: publicUrl }
+}

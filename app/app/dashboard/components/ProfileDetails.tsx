@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import PlayerStats from "./PlayerStats";
 import { getProfileAction, updateProfileAction } from "../actions";
 import { useRealtimeQuery } from "@/hooks/useRealTimeQuery";
+import AvatarUpload from "@/components/common/AvatarUpload";
 
 const LEAGUES = [
   { name: "Bronze League", min: 0, max: 99, color: "from-orange-800 to-orange-600", text: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/20" },
@@ -61,35 +62,29 @@ export default function ProfileDetails({ mobile = false }: { mobile?: boolean })
     key: `profile-stats-${data?.id}`,
     fetcher: async () => {
       if (!data?.id) return null;
-      const supabase = createClient();
-      const { data: row } = await supabase
-        .from('profiles')
-        .select('best_score, total_plays, latest_score')
-        .eq('id', data.id)
-        .single();
-      return row;
+      const { data: resData } = await getProfileAction()
+      return resData;
     },
     onUpdate: (payload) => {
       if (payload.new?.id !== data?.id) return null;
-      console.log('payload',payload)
+      console.log('payload', payload)
       const { best_score, total_plays, latest_score } = payload?.new;
       return { best_score, total_plays, latest_score };
     },
   });
 
-   console.log('stats',stats)
-
   const bestScore = stats?.best_score ?? data?.best_score ?? 0;
   const { current: league, next: nextLeague, progress, pointsToNext, isMaster } = getLeagueInfo(bestScore);
 
   const inner = (
-    <div className="flex flex-col gap-5 p-6 h-[calc(100vh-220px)]">
+    <div className="flex flex-col gap-5 p-6 h-[calc(100vh-198px)] md:h-[calc(100vh-220px)]">
 
       {/* Avatar + Name */}
       <div className="flex flex-col items-center text-center gap-3">
         <div className="relative group">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-purple-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-200" />
           <div className="relative h-24 w-24 rounded-full p-[2px] bg-background-dark">
+            {/* <AvatarUpload  /> */}
             {data?.avatar_url
               ? <img src={data.avatar_url} alt="Profile avatar" className="h-full w-full rounded-full object-cover" />
               : <div className="h-full w-full rounded-full bg-surface-dark flex items-center justify-center text-2xl font-bold text-primary">{data?.display_name?.charAt(0)?.toUpperCase() ?? "?"}</div>}
@@ -107,7 +102,7 @@ export default function ProfileDetails({ mobile = false }: { mobile?: boolean })
         </div>
       </div>
 
-      {/* League Progress */}
+
       <div className={`rounded-xl border ${league.border} ${league.bg} p-4`}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
@@ -126,7 +121,6 @@ export default function ProfileDetails({ mobile = false }: { mobile?: boolean })
         </div>
       </div>
 
-      {/* Editable fields */}
       <div className="flex flex-col gap-2.5">
         {[
           { label: "Display Name", name: "display_name" },
@@ -140,7 +134,6 @@ export default function ProfileDetails({ mobile = false }: { mobile?: boolean })
         ))}
       </div>
 
-      {/* Stats — live via Supabase Realtime */}
       {stats && <PlayerStats stats={stats} />}
 
     </div>

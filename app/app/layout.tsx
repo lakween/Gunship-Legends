@@ -1,13 +1,7 @@
 
-import { DeployButton } from "@/components/deploy-button";
-import { EnvVarWarning } from "@/components/env-var-warning";
 import { AuthButton } from "@/components/auth-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
-import { hasEnvVars } from "@/lib/utils";
-import Link from "next/link";
 import { Suspense } from "react";
-
-
 
 export default function ProtectedLayout({
   children,
@@ -19,7 +13,7 @@ export default function ProtectedLayout({
       <div className="flex-1 w-full flex flex-col items-center h-full">
         <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
           <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-            <div className="flex gap-5 items-center font-semibold">
+            <div className=" hidden md:flex gap-5 items-center font-semibold">
               Welcome to the Gunship Legend
             </div>
             <Suspense>
@@ -27,7 +21,7 @@ export default function ProtectedLayout({
             </Suspense>
           </div>
         </nav>
-        <div className="h-[84vh]">
+        <div className="h-full">
           {children}
         </div>
 
@@ -35,7 +29,7 @@ export default function ProtectedLayout({
           <p>
             Designed and developed by{" "}
             <a
-              href="https://www.linkedin.com/in/lakween-senathilake-6611221a6"
+              href="https://github.com/lakween/Gunship-Legends"
               target="_blank"
               rel="noopener noreferrer"
               className="font-bold hover:underline"
@@ -43,7 +37,7 @@ export default function ProtectedLayout({
               Lakween
             </a>
           </p>
-          <ThemeSwitcher />
+          {/* <ThemeSwitcher /> */}
         </footer>
       </div>
     </main >

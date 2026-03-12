@@ -118,7 +118,7 @@ const CFG = {
 
   // ── Player ────────────────────────────────────────────────────────────────
   player: {
-    startHp: 10,   // starting health (also the max)
+    startHp: 4,   // starting health (also the max)
     speed: 3.5,  // movement speed (px / frame)
     invincibleFrames: 108, // invincibility frames after being hit
   },
@@ -183,9 +183,9 @@ const CFG = {
   enemies: {
     scout: { hp: 1, reward: 1, shootInterval: 120, bulletSpeed: 4.0, speedRange: [2.8, 4.5] as [number, number], pattern: "zigzag", dropChance: 0.3 },
     gunship: { hp: 5, reward: 4, shootInterval: 50, bulletSpeed: 4.0, speedRange: [0.8, 1.5] as [number, number], pattern: "straight", dropChance: 0.65 },
-    bomber: { hp: 3, reward: 3, shootInterval: 999, bulletSpeed: 4.0, speedRange: [1.2, 2.0] as [number, number], pattern: "straight", dropChance: 0.55 },
+    bomber: { hp: 3, reward: 3, shootInterval: 120, bulletSpeed: 4.0, speedRange: [1.2, 2.0] as [number, number], pattern: "straight", dropChance: 0.55 },
     ace: { hp: 2, reward: 5, shootInterval: 40, bulletSpeed: 4.8, speedRange: [2.0, 3.5] as [number, number], pattern: "wave", dropChance: 0.75 },
-    jet: { hp: 1, reward: 3, shootInterval: 200, bulletSpeed: 4.0, speedRange: [5.5, 9.0] as [number, number], pattern: "swoop", dropChance: 0.35 },
+    jet: { hp: 1, reward: 3, shootInterval: 120, bulletSpeed: 4.0, speedRange: [5.5, 9.0] as [number, number], pattern: "swoop", dropChance: 0.35 },
     boss: { hp: 25, reward: 25, shootInterval: 28, bulletSpeed: 5.2, speedRange: [0.4, 0.7] as [number, number], pattern: "straight", dropChance: 1.0 },
   },
 };
@@ -662,6 +662,7 @@ export default function GunshipLegend() {
   const gs = useRef(mkGs());
 
   const triggerGameOver = useCallback(async () => {
+    console.log('worimg')
     if (scoreSubmitted.current) return;
     scoreSubmitted.current = true; overRef.current = true;
     try { (window.AudioContext || (window as any).webkitAudioContext) && createSoundSystem().gameOver(); } catch { }
@@ -706,6 +707,8 @@ export default function GunshipLegend() {
     secondChanceUsed.current = true;
     setShowSecondChance(false);
     setGameOver(true);
+    resetGame()
+    triggerGameOver()
   }, []);
 
   useEffect(() => {
@@ -1307,8 +1310,8 @@ export default function GunshipLegend() {
             style={{ background: "radial-gradient(ellipse at 50% 55%, rgba(0,18,55,0.96) 0%, rgba(0,3,9,0.99) 100%)" }}
             onTouchStart={e => { e.preventDefault(); if (!startedRef.current && !overRef.current) { startedRef.current = true; setGameStarted(true); } }}>
             <p className="text-[10px] tracking-[0.45em] text-blue-400/40 uppercase">Classified Mission</p>
-            <h1 className="text-4xl font-black tracking-[0.15em] text-white">
-              HELI <span style={{ color: "#44aaff", textShadow: "0 0 22px #44aaff88" }}>ASSAULT</span>
+            <h1 className="text-xl md:text-4xl font-black tracking-[0.15em] text-white">
+              GUNSHIP <span style={{ color: "#44aaff", textShadow: "0 0 22px #44aaff88" }}>LEGENDS</span>
             </h1>
             <div className="h-px w-64 bg-gradient-to-r from-transparent via-blue-500/35 to-transparent" />
             <div className="grid grid-cols-3 gap-x-5 gap-y-2 text-[10px] mt-1">
@@ -1323,7 +1326,7 @@ export default function GunshipLegend() {
               <p><span className="text-blue-300/50">MOUSE</span> <span className="text-white/75">move cursor to fly · click/hold to fire</span></p>
               <p><span className="text-blue-300/50">MOBILE</span> <span className="text-white/75">touch to fly · hold FIRE · tap weapon icons</span></p>
             </div>
-            <p className="text-blue-400/28 text-[10px] animate-pulse tracking-[0.5em] mt-2">TAP OR PRESS ANY KEY</p>
+            <p className="text-blue-400/28 text-[10px] animate-pulse tracking-[0.5em] mt-2">TAP OR PRESS SPACE</p>
           </div>
         )}
 
