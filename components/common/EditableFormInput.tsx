@@ -130,7 +130,6 @@ const EditableFormInput = ({
                 {required && <span className="text-destructive ml-1">*</span>}
             </Label>)}
 
-            {/* ── Display row ── */}
             <button
                 ref={anchorRef}
                 type="button"
@@ -147,7 +146,6 @@ const EditableFormInput = ({
                 )}
             </button>
 
-            {/* ── Portal popover — renders on document.body, escapes overflow:hidden ── */}
             {open && typeof window !== "undefined" && createPortal(
                 <div
                     ref={popoverRef}

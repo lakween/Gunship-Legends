@@ -47,7 +47,6 @@ export default function ProfileDetails({ mobile = false }: { mobile?: boolean })
 
   useEffect(() => { if (data) setForm(data); }, [data]);
 
-  // ── Save a single field ───────────────────────────────────────────────────
   const onSaveHandler = async (key: string, value: string) => {
     const result = await updateProfileAction(key, value);
     if (!result.success) {

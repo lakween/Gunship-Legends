@@ -19,11 +19,9 @@ import { signUpAction } from "../actions";
 import FormInput from "@/components/common/FormInput";
 
 
-// ── Types ─────────────────────────────────────────────────────────────────
 type FormFields = Partial<SignUpFormValues>;
 type FormErrors = Partial<Record<keyof SignUpFormValues, string>>;
 
-// ── Component ─────────────────────────────────────────────────────────────
 export function SignUpForm({
   className,
   ...props
@@ -33,7 +31,6 @@ export function SignUpForm({
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  // ── Field change — validate single field on every keystroke ───────────
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const updated = { ...form, [name]: value };
@@ -47,7 +44,6 @@ export function SignUpForm({
       );
   };
 
-  // ── Submit — validate all fields then call server action ──────────────
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);

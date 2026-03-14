@@ -2,7 +2,6 @@
 
 import { createClient } from "@/lib/supabase/server";
 
-// ── Get profile ───────────────────────────────────────────────────────────────
 export async function getProfileAction() {
   const supabase = await createClient();
 
@@ -20,7 +19,6 @@ export async function getProfileAction() {
   return { success: true, data };
 }
 
-// ── Update profile field ──────────────────────────────────────────────────────
 export async function updateProfileAction(key: string, value: string) {
   const allowedFields = ["display_name", "first_name", "last_name", "avatar_url"];
 
@@ -147,12 +145,10 @@ export async function uploadAvatar(formData: FormData) {
 
   if (storageError) throw new Error(storageError.message)
 
-  // 4. Get public URL
   const { data: { publicUrl } } = supabase.storage
     .from('profile pictures')
     .getPublicUrl(storageData.path)
 
-  // 5. Save to profiles table
   const { error: dbError } = await supabase
     .from('profiles')
     .update({ avatar_url: publicUrl })
@@ -189,7 +185,6 @@ export async function uploadAvatarAction(
   const ext = file.name.split(".").pop() ?? "jpg";
   const path = `${user.id}/avatar.${ext}`;
 
-  // Convert File → ArrayBuffer → Buffer for server-side upload
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
@@ -203,7 +198,6 @@ export async function uploadAvatarAction(
     .from(BUCKET)
     .getPublicUrl(path);
 
-  // Bust cache so browser loads new image immediately
   const bustedUrl = `${publicUrl}?t=${Date.now()}`;
 
   const { error: updateError } = await supabase

@@ -3,7 +3,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
 interface QuestionData {
     solution?: number | string;
 }
@@ -18,7 +17,6 @@ export interface HeartChallenge {
     answer: number;
 }
 
-// ── Pure validation — no side effects ────────────────────────────────────────
 function validateAnswer(correctAnswer: QuestionData, answer: string): SubmitResult {
     if (!answer.trim()) {
         return { success: false, error: "Please enter the answer" };

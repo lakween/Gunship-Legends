@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { useCallApi } from "@/hooks/useCallApi";
-import { getHeartQuestionAction, handleSubmitAction } from "./actions";
 import MessageBox from "@/components/common/MessageBox";
+import { Button } from "@/components/ui/button";
 import { useServerAction } from "@/hooks/useServerAction";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
+import { toast } from "sonner";
+import { getHeartQuestionAction, handleSubmitAction } from "./actions";
 
 const HeartQuestionHumanPage: React.FC = () => {
     const router = useRouter();
@@ -36,7 +35,6 @@ const HeartQuestionHumanPage: React.FC = () => {
 
         if (!result.success) {
             toast.warning(result.error);
-            // Refresh question if answer was wrong
             if (result.error === "Wrong answer. Please try again") handleRefresh();
             setIsSubmitting(false);
             return;

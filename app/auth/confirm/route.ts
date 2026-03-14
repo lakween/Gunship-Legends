@@ -12,7 +12,6 @@ export async function GET(request: NextRequest) {
 
   const supabase = await createClient();
 
-  // PKCE flow (email confirmation uses this by default)
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
@@ -22,7 +21,6 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // OTP / token_hash flow (magic links, etc.)
   if (token_hash && type) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash });
     if (!error) {

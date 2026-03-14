@@ -15,7 +15,6 @@ function rankStyle(rank: number) {
   return { border: "", badge: "", score: "text-secondary", row: "border border-transparent hover:border-border-dark" };
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
 function Avatar({ src, name, borderClass }: { src: string | null; name: string; borderClass: string }) {
   if (src) return <img src={src} alt={`${name} avatar`} className={`w-10 h-10 rounded-full object-cover border-2 ${borderClass}`} />;
   const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
@@ -135,7 +134,6 @@ function LeaderList({ leaders, loading, flash }: { leaders: LeaderEntry[]; loadi
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
 export default function Leaderboard({ mobile = false }: { mobile?: boolean }) {
   const { data, loading, live, flash } = useRealtimeQuery<LeaderboardData>({
     key: "leaderboard",

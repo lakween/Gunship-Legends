@@ -65,10 +65,8 @@ export default function Dashboard() {
   );
 }
 
-// ── Lightweight mobile wrappers (remove the hidden lg:flex from the asides) ──
 
 function MobileProfile() {
-  // Re-uses all ProfileDetails logic but shown inline on mobile
   return <ProfileDetails mobile />;
 }
 

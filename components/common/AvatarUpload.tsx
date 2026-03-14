@@ -48,7 +48,6 @@ export default function AvatarUpload({
 
     const displayUrl = preview ?? currentUrl;
 
-    // ── Pick file ─────────────────────────────────────────────────────────────
     const onFilePicked = (e: React.ChangeEvent<HTMLInputElement>) => {
         const picked = e.target.files?.[0];
         if (!picked) return;
@@ -68,7 +67,6 @@ export default function AvatarUpload({
         e.target.value = "";
     };
 
-    // ── Upload via server action ───────────────────────────────────────────────
     const handleUpload = async () => {
         if (!file) return;
         setUploading(true);
@@ -101,7 +99,7 @@ export default function AvatarUpload({
 
     return (
         <>
-            {/* ── Avatar trigger ─────────────────────────────────────────────── */}
+           
             <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
@@ -112,10 +110,9 @@ export default function AvatarUpload({
                 )}
                 aria-label="Change profile picture"
             >
-                {/* Glow ring */}
+                
                 <span className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-primary to-purple-600 blur opacity-70 group-hover:opacity-100 transition duration-200 pointer-events-none" />
 
-                {/* Avatar or initials */}
                 <span className={cn("relative flex h-full w-full rounded-full overflow-hidden bg-surface-dark border-2 border-background-dark", s.wrap)}>
                     {displayUrl ? (
                         <img
@@ -130,7 +127,6 @@ export default function AvatarUpload({
                     )}
                 </span>
 
-                {/* Camera badge */}
                 <span className={cn(
                     "absolute bottom-0 right-0 flex items-center justify-center rounded-full",
                     "bg-primary border-2 border-background-dark text-primary-foreground",
@@ -141,7 +137,6 @@ export default function AvatarUpload({
                 </span>
             </button>
 
-            {/* Hidden file input */}
             <input
                 ref={inputRef}
                 type="file"
@@ -150,9 +145,8 @@ export default function AvatarUpload({
                 onChange={onFilePicked}
             />
 
-            {/* ── Confirm dialog ──────────────────────────────────────────────── */}
             <Dialog open={open} onOpenChange={(v) => { if (!v) handleCancel(); }}>
-                <DialogContent className="sm:max-w-sm w-[calc(100vw-2rem)] bg-background-dark border-border-dark">
+                <DialogContent className="sm:max-w-sm w-[calc(100vw-2rem)] border-border-dark">
                     <DialogHeader>
                         <DialogTitle className="text-primary">Update Profile Picture</DialogTitle>
                     </DialogHeader>
@@ -171,12 +165,11 @@ export default function AvatarUpload({
 
                         <div className="text-center">
                             <p className="text-sm text-primary font-medium truncate max-w-[220px]">{file?.name}</p>
-                            <p className="text-xs text-secondary mt-0.5">
+                            <p className="text-xs text-primary  opacity-60 mt-0.5">
                                 {file ? `${(file.size / 1024).toFixed(0)} KB` : ""}
                             </p>
                         </div>
 
-                        {/* Actions */}
                         <div className="flex w-full gap-3">
                             <Button
                                 variant="outline"
@@ -199,10 +192,9 @@ export default function AvatarUpload({
                             </Button>
                         </div>
 
-                        {/* Re-pick */}
                         <button
                             type="button"
-                            className="text-xs text-secondary underline underline-offset-4 hover:text-primary transition-colors"
+                            className="text-xs text-primary opacity-60 underline underline-offset-4 hover:text-primary hover:opacity-100 transition-colors"
                             onClick={() => inputRef.current?.click()}
                             disabled={uploading}
                         >

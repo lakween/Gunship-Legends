@@ -4,7 +4,6 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { RealtimeChannel } from "@supabase/supabase-js";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
 type Listener = (payload: any) => void;
 
 interface RealtimeContextValue {
@@ -12,10 +11,8 @@ interface RealtimeContextValue {
   live: boolean;
 }
 
-// ── Context ───────────────────────────────────────────────────────────────────
 export const RealtimeContext = createContext<RealtimeContextValue | null>(null);
 
-// ── Provider — one single channel shared by all children ─────────────────────
 export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   const [live, setLive] = useState(false);
   const listenersRef = useRef<Map<string, Set<Listener>>>(new Map());
@@ -25,7 +22,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
     const supabase = createClient();
 
     channelRef.current = supabase
-      .channel("app-realtime")                     // ← single shared channel
+      .channel("app-realtime")                 
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "profiles" },
@@ -41,7 +38,6 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
     return () => { supabase.removeChannel(channelRef.current!); };
   }, []);
 
-  // ── Subscribe — returns unsubscribe fn ───────────────────────────────────
   const subscribe = (key: string, callback: Listener): (() => void) => {
     if (!listenersRef.current.has(key)) {
       listenersRef.current.set(key, new Set());
