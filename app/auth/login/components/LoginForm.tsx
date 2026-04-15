@@ -19,11 +19,10 @@ import { loginAction } from "../actions";
 import useForm from "@/hooks/useForm";
 import FormInput from "@/components/common/FormInput";
 
-// ── Types ──────────────────────────────────────────────────────────────────
+
 type FormFields = Partial<LoginFormValues>;
 type FormErrors = Partial<Record<keyof LoginFormValues, string>>;
 
-// ── Component ──────────────────────────────────────────────────────────────
 export function LoginForm({
     className,
     ...props

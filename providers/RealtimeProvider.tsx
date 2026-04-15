@@ -22,18 +22,24 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
     const supabase = createClient();
 
     channelRef.current = supabase
-      .channel("app-realtime")                 
+      .channel("app-realtime")
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "profiles" },
         (payload) => {
-          // Dispatch to all registered listeners
           listenersRef.current.forEach((callbacks) => {
             callbacks.forEach(cb => cb(payload));
           });
         }
       )
-      .subscribe(status => setLive(status === "SUBSCRIBED"));
+      .subscribe(status => {
+        setLive(status === "SUBSCRIBED")
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          setTimeout(() => {
+            channelRef.current?.subscribe();
+          }, 2000);
+        }
+      });
 
     return () => { supabase.removeChannel(channelRef.current!); };
   }, []);

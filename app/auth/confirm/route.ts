@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code"); 
   const next = searchParams.get("next") ?? "/app/confirmation-success";
 
+  // pkce
   const supabase = await createClient();
 
   if (code) {
