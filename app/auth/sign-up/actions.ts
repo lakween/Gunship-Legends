@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getSiteUrl } from "@/lib/site-url";
 
 
 export async function signUpAction(formData: {
@@ -10,7 +11,7 @@ export async function signUpAction(formData: {
   password: string;
 }) {
   const supabase = await createClient();
-  const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm?next=/app/confirmation-success`
+  const redirectUrl = `${getSiteUrl()}/auth/confirm?next=/app/confirmation-success`;
 
   const { error } = await supabase.auth.signUp({
     email: formData.email,

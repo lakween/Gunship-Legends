@@ -5,10 +5,9 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import NextTopLoader from 'nextjs-toploader';
 import { RealtimeProvider } from "@/providers/RealtimeProvider";
+import { getSiteUrl } from "@/lib/site-url";
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
+const defaultUrl = getSiteUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
@@ -53,7 +52,7 @@ export default function RootLayout({
             easing="ease"
             speed={200}
           />
-          < RealtimeProvider>
+          <RealtimeProvider>
             {children}
           </RealtimeProvider>
         </ThemeProvider>
