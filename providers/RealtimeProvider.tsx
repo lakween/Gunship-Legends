@@ -55,6 +55,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
     };
   };
 
+  
   return (
     <RealtimeContext.Provider value={{ subscribe, live }}>
       {children}
